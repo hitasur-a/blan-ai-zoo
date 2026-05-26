@@ -1,13 +1,11 @@
 // BLAN AI 動物園 - 8 デモ 一覧画面
-// 動物別カテゴリ表示 (v2 トンマナ + ニューモーフィズム)
+// ①〜⑧ 順 (DEMO_KEYS デフォルト) の押しやすいフラットボタン群
+// 動物は タグ で表現
 
 import Link from "next/link";
 import Image from "next/image";
-import { ANIMALS, ANIMAL_KEYS } from "@/data/animals";
-import { DEMOS } from "@/data/demos";
-import { ANIMAL_TO_DEMOS } from "@/lib/types";
-import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { ANIMALS } from "@/data/animals";
+import { DEMOS, DEMO_KEYS } from "@/data/demos";
 
 export default function DemosPage() {
   return (
@@ -47,57 +45,71 @@ export default function DemosPage() {
             ← ポータル
           </Link>
           <h1 className="mt-6 font-display text-5xl tracking-tight">
-            動物たちの活躍を見る
+            AI 活用デモ 8 つ
           </h1>
-          <p className="mt-4 text-sm leading-relaxed text-stone-600 max-w-2xl">
-            5 動物が それぞれ担当する 8 つの AI 活用デモ。気になる動物のデモから触ってみてください。
+          <p className="mt-4 text-sm leading-relaxed text-stone-800 max-w-2xl">
+            気になる番号をタップして実際に触ってみてください。①〜⑥ がシミュレーション、A・B が不動産業向けデモです。
           </p>
         </header>
 
-        <div className="space-y-8">
-          {ANIMAL_KEYS.map((animalKey) => {
-            const animal = ANIMALS[animalKey];
-            const demoKeys = ANIMAL_TO_DEMOS[animalKey];
+        {/* フラットな 8 ボタン (①〜⑧ 順)、動物タグ付き */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {DEMO_KEYS.map((demoKey) => {
+            const demo = DEMOS[demoKey];
+            const animal = ANIMALS[demo.担当動物];
             return (
-              <Card key={animalKey} variant="raised" padding="lg">
-                <div className="mb-6 flex items-baseline gap-4">
-                  <h2 className="font-display text-3xl text-[#fb6103]">
-                    {animal.name}担当
+              <Link
+                key={demoKey}
+                href={`/demos/${demoKey}`}
+                className="group block"
+              >
+                <div
+                  className="h-full rounded-2xl bg-white border border-stone-200 p-6 shadow-sm transition-all duration-200 group-hover:-translate-y-1 group-hover:shadow-xl group-hover:border-[#fb6103] group-active:translate-y-0 flex flex-col"
+                >
+                  {/* 番号 (デカく目立つ) */}
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="font-display text-5xl leading-none text-[#fb6103]">
+                      {demo.number}
+                    </span>
+                    {/* 動物タグ */}
+                    <span className="rounded-full bg-stone-100 px-3 py-1 text-[10px] font-bold tracking-wider text-stone-700 group-hover:bg-[#fb6103]/10 group-hover:text-[#fb6103] transition-colors">
+                      {animal.name}
+                    </span>
+                  </div>
+
+                  {/* タイトル */}
+                  <h2 className="mb-2 font-bold text-base leading-snug text-stone-900">
+                    {demo.name}
                   </h2>
-                  <Badge tone="orange" size="sm">
-                    {animal.領域}
-                  </Badge>
+
+                  {/* 1 行サマリ */}
+                  <p className="text-xs leading-relaxed text-stone-700 flex-1">
+                    {demo.oneLineSummary}
+                  </p>
+
+                  {/* タップ誘導 */}
+                  <div className="mt-4 inline-flex items-center gap-1 text-[10px] font-bold tracking-widest uppercase text-stone-400 group-hover:text-[#fb6103] transition-colors">
+                    タップで開く →
+                  </div>
                 </div>
-                <p className="mb-6 text-sm leading-relaxed text-stone-800 font-medium">
-                  {animal.特徴1行}
-                </p>
-                <div className="grid gap-4 md:grid-cols-2 items-stretch">
-                  {demoKeys.map((demoKey) => {
-                    const demo = DEMOS[demoKey];
-                    return (
-                      <Link key={demoKey} href={`/demos/${demoKey}`} className="group block h-full">
-                        <Card
-                          variant="flat"
-                          padding="md"
-                          className="bg-white/60 backdrop-blur-sm transition-all duration-200 group-hover:translate-y-[-2px] group-hover:shadow-lg group-active:translate-y-px h-full flex flex-col"
-                        >
-                          <div className="mb-2 flex items-baseline gap-3">
-                            <span className="font-display text-2xl text-[#fb6103]">
-                              {demo.number}
-                            </span>
-                            <span className="text-base font-bold">{demo.name}</span>
-                          </div>
-                          <p className="text-sm leading-relaxed text-stone-800">
-                            {demo.oneLineSummary}
-                          </p>
-                        </Card>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </Card>
+              </Link>
             );
           })}
+        </div>
+
+        {/* 動物 凡例 */}
+        <div className="mt-12 rounded-2xl bg-white/60 backdrop-blur-sm border border-stone-200 p-6">
+          <div className="mb-3 text-[11px] font-bold uppercase tracking-widest text-stone-500">
+            動物タグ凡例 (業務領域グループ)
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
+            {Object.values(ANIMALS).map((a) => (
+              <div key={a.key} className="flex flex-col gap-0.5">
+                <div className="font-bold text-stone-900">{a.name}</div>
+                <div className="text-[10px] text-stone-600">{a.領域}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </main>
     </div>
