@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     const pathname = `analytics/${date}/${time}-${random}-${demoKey}-${kind}.json`;
 
     await put(pathname, JSON.stringify(event, null, 2), {
-      access: "public",
+      access: "private",
       contentType: "application/json",
       addRandomSuffix: false,
     });
