@@ -40,6 +40,19 @@ function countLength(s: string): number {
   return Array.from(s.replace(/\s+/g, "")).length;
 }
 
+// Markdown 記号 (**bold** ## 等) をプレーンテキストに変換 (媒体ブロック表示・コピー用)
+function stripMd(text: string): string {
+  return text
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/(?<!\w)\*([^*\n]+?)\*(?!\w)/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/^>\s+/gm, "")
+    .replace(/^-{3,}\s*$/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 interface MediaBlock {
   rawTitle: string;
   rule: { name: string; min: number; max: number } | null;
@@ -264,14 +277,15 @@ export default function PropertyCopyPage() {
                   {!output && <div className="rounded-xl neu-inset-sm p-8 text-center text-xs text-stone-400">物件情報を入力して 「媒体別コピーを生成」 を押してください</div>}
                   {mediaBlocks.map((b, i) => {
                     const isMedia = !!b.rule;
-                    const length = countLength(b.body);
+                    const cleanBody = stripMd(b.body);
+                    const length = countLength(cleanBody);
                     const inRange = b.rule ? length >= b.rule.min && length <= b.rule.max : true;
-                    const ngHits = NG_PATTERNS.filter((p) => p.re.test(b.body));
+                    const ngHits = NG_PATTERNS.filter((p) => p.re.test(cleanBody));
                     if (!isMedia) {
                       return (
-                        <div key={i} className="rounded-xl bg-stone-50 px-3 py-2 text-[10px]">
-                          <div className="font-bold text-stone-700 mb-1">{b.rawTitle}</div>
-                          <div className="text-stone-600 whitespace-pre-wrap leading-relaxed">{b.body}</div>
+                        <div key={i} className="rounded-xl bg-stone-50 px-3 py-2 text-[11px]">
+                          <div className="font-bold text-stone-800 mb-1">{b.rawTitle}</div>
+                          <div className="text-stone-800 whitespace-pre-wrap leading-relaxed">{cleanBody}</div>
                         </div>
                       );
                     }
@@ -279,16 +293,16 @@ export default function PropertyCopyPage() {
                       <div key={i} className="rounded-xl border border-pink-200 bg-white/80 px-3 py-2.5">
                         <div className="flex items-center justify-between mb-1.5">
                           <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-bold text-stone-800">{b.rawTitle}</span>
+                            <span className="text-[12px] font-bold text-stone-900">{b.rawTitle}</span>
                             <span className={cn("text-[10px] font-bold", inRange ? "text-emerald-700" : "text-amber-700")}>
                               {length} / {b.rule!.min}-{b.rule!.max}字
                             </span>
                           </div>
-                          <button onClick={() => copy(i, b.body)} className="text-[10px] font-bold text-pink-700 hover:text-pink-900">
+                          <button onClick={() => copy(i, cleanBody)} className="text-[10px] font-bold text-pink-700 hover:text-pink-900">
                             {copiedIdx === i ? "✓ コピー済" : "コピー"}
                           </button>
                         </div>
-                        <div className="text-xs leading-relaxed text-stone-800 whitespace-pre-wrap">{b.body}</div>
+                        <div className="text-xs leading-relaxed text-stone-900 whitespace-pre-wrap">{cleanBody}</div>
                         {ngHits.length > 0 && (
                           <div className="mt-1.5 flex flex-wrap gap-1">
                             {ngHits.map((h, k) => (
@@ -311,10 +325,10 @@ export default function PropertyCopyPage() {
                 {MEDIA_RULES.map((r) => (
                   <li key={r.name} className="border-l-2 border-pink-300 pl-3">
                     <div className="flex items-baseline gap-2">
-                      <span className="font-bold text-xs text-stone-800">{r.name}</span>
-                      <span className="text-[10px] text-pink-700">{r.limit}</span>
+                      <span className="font-bold text-sm text-stone-900">{r.name}</span>
+                      <span className="text-[11px] font-bold text-pink-700">{r.limit}</span>
                     </div>
-                    <div className="text-[10px] leading-relaxed text-stone-600">{r.tone}</div>
+                    <div className="text-[11px] leading-relaxed text-stone-800">{r.tone}</div>
                   </li>
                 ))}
               </ul>
@@ -323,9 +337,9 @@ export default function PropertyCopyPage() {
               <h3 className="mb-2 font-display text-sm">自動排除 NG 表現</h3>
               <ul className="space-y-1.5">
                 {NG_EXPRESSIONS.map((n, i) => (
-                  <li key={i} className="text-[10px] leading-relaxed">
-                    <span className="font-bold text-stone-800">{n.word}</span>
-                    <span className="text-stone-500"> — {n.reason}</span>
+                  <li key={i} className="text-[11px] leading-relaxed">
+                    <span className="font-bold text-stone-900">{n.word}</span>
+                    <span className="text-stone-700"> — {n.reason}</span>
                   </li>
                 ))}
               </ul>
