@@ -20,23 +20,56 @@ function extractText(node: React.ReactNode): string {
 type Severity = "high" | "mid" | "low" | null;
 
 function detectSeverity(text: string): Severity {
-  if (/重要度[\s\-:：]*\[?\s*高\s*\]?/.test(text)) return "high";
-  if (/重要度[\s\-:：]*\[?\s*中\s*\]?/.test(text)) return "mid";
-  if (/重要度[\s\-:：]*\[?\s*低\s*\]?/.test(text)) return "low";
+  // ** で囲まれてる場合も含めて検出
+  if (/重要度[\s\-:：]*\**\[?\s*高\s*\]?\**/.test(text)) return "high";
+  if (/重要度[\s\-:：]*\**\[?\s*中\s*\]?\**/.test(text)) return "mid";
+  if (/重要度[\s\-:：]*\**\[?\s*低\s*\]?\**/.test(text)) return "low";
   return null;
 }
 
-const SEVERITY_STYLES: Record<Exclude<Severity, null>, { dot: string; chip: string; border: string; label: string }> = {
-  high: { dot: "bg-red-600", chip: "bg-red-50 text-red-800 border-red-200", border: "border-red-200", label: "高" },
-  mid:  { dot: "bg-amber-500", chip: "bg-amber-50 text-amber-900 border-amber-200", border: "border-amber-200", label: "中" },
-  low:  { dot: "bg-emerald-600", chip: "bg-emerald-50 text-emerald-800 border-emerald-200", border: "border-emerald-200", label: "低" },
+// 重要度シグナル: 左端に色ストライプ + 番号サークル + 小さな letter chip
+const SEVERITY_STYLES: Record<Exclude<Severity, null>, {
+  stripe: string;       // 左端の縦帯
+  numCircle: string;    // 番号サークル背景
+  letterChip: string;   // 「高/中/低」ラベル
+  border: string;       // カード border
+  bgHover: string;      // hover bg
+  label: string;
+}> = {
+  high: {
+    stripe: "bg-gradient-to-b from-red-500 to-red-700",
+    numCircle: "bg-gradient-to-br from-red-500 to-red-700 text-white shadow-md shadow-red-200",
+    letterChip: "bg-red-50 text-red-800 border-red-200",
+    border: "border-red-200",
+    bgHover: "hover:bg-red-50/40",
+    label: "高",
+  },
+  mid: {
+    stripe: "bg-gradient-to-b from-amber-400 to-amber-600",
+    numCircle: "bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-md shadow-amber-200",
+    letterChip: "bg-amber-50 text-amber-900 border-amber-200",
+    border: "border-amber-200",
+    bgHover: "hover:bg-amber-50/40",
+    label: "中",
+  },
+  low: {
+    stripe: "bg-gradient-to-b from-emerald-400 to-emerald-600",
+    numCircle: "bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-md shadow-emerald-200",
+    letterChip: "bg-emerald-50 text-emerald-800 border-emerald-200",
+    border: "border-emerald-200",
+    bgHover: "hover:bg-emerald-50/40",
+    label: "低",
+  },
 };
 
-// "### リスク N: ..." 形式の H3 (リスク見出し) をパースして、タイトルから 重要度 表記を取り除く
+// "### リスク N: ..." 形式の H3 (リスク見出し) をパースして、
+// タイトルから 重要度表記 + ** 等の Markdown 記号を除去
 function stripSeverityLabel(text: string): string {
   return text
-    .replace(/[—\-―]\s*重要度[\s\-:：]*\[?\s*(?:高|中|低)\s*\]?/g, "")
-    .replace(/重要度[\s\-:：]*\[?\s*(?:高|中|低)\s*\]?/g, "")
+    .replace(/[—\-―]\s*重要度[\s\-:：]*\**\[?\s*(?:高|中|低)\s*\]?\**/g, "")
+    .replace(/重要度[\s\-:：]*\**\[?\s*(?:高|中|低)\s*\]?\**/g, "")
+    .replace(/\*\*(.+?)\*\*/g, "$1") // **bold** → bold
+    .replace(/^\*+|\*+$/g, "")
     .trim();
 }
 
@@ -185,27 +218,43 @@ export function Markdown({ children }: MarkdownProps) {
           const sev = block.severity;
           const style = sev ? SEVERITY_STYLES[sev] : null;
           return (
-            <details key={i} className={`rounded-lg border-2 ${style?.border ?? "border-rule"} bg-white overflow-hidden group`}>
-              <summary className="cursor-pointer select-none px-3 py-2.5 hover:bg-stone-50 flex items-start gap-2 transition-colors list-none">
-                {/* 重要度バッジ */}
-                {style && (
-                  <span className={`flex-shrink-0 inline-flex items-center gap-1 rounded-md ${style.chip} text-[10px] font-black px-1.5 py-0.5 border`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
-                    {style.label}
+            <details
+              key={i}
+              className={`relative rounded-xl bg-white overflow-hidden group shadow-sm border ${style?.border ?? "border-rule"} ${style?.bgHover ?? ""}`}
+            >
+              {/* 左端の色ストライプ (重要度シグナル) */}
+              {style && (
+                <span className={`absolute left-0 top-0 bottom-0 w-1.5 ${style.stripe}`} aria-hidden />
+              )}
+              <summary className="cursor-pointer select-none pl-5 pr-3 py-2.5 flex items-center gap-2.5 transition-colors list-none">
+                {/* 番号サークル (色付きグラデーション) */}
+                {num && style && (
+                  <span className={`flex-shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full ${style.numCircle} text-[12px] font-black`}>
+                    {num}
                   </span>
                 )}
-                {num && (
-                  <span className="flex-shrink-0 text-[11px] font-bold text-stone-500 mt-0.5">#{num}</span>
+                {num && !style && (
+                  <span className="flex-shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full bg-stone-200 text-stone-700 text-[12px] font-black">
+                    {num}
+                  </span>
                 )}
+                {/* タイトル */}
                 <div className="min-w-0 flex-1">
                   {clause && (
                     <div className="text-[10px] font-mono text-stone-500 leading-tight">{clause}</div>
                   )}
                   <div className="text-[13px] font-bold text-stone-900 leading-snug">{title || summary}</div>
                 </div>
-                <span className="flex-shrink-0 text-stone-400 group-open:rotate-180 transition-transform text-xs mt-1">▼</span>
+                {/* 重要度ラベル (右側、small) */}
+                {style && (
+                  <span className={`flex-shrink-0 inline-flex items-center rounded-md ${style.letterChip} text-[10px] font-black px-2 py-0.5 border tracking-wider`}>
+                    {style.label}
+                  </span>
+                )}
+                {/* 展開アイコン */}
+                <span className="flex-shrink-0 text-stone-400 group-open:rotate-180 transition-transform text-[10px]">▼</span>
               </summary>
-              <div className="px-4 pb-3 pt-1 border-t border-rule/50 bg-stone-50/30">
+              <div className="pl-5 pr-4 pb-3 pt-1 border-t border-rule/50 bg-stone-50/40">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
@@ -251,15 +300,17 @@ export function Markdown({ children }: MarkdownProps) {
             </div>
           );
         }
-        // lead / tail (立場宣言、末尾の定型文)
+        // lead / tail (立場宣言、末尾の定型文) — Markdown レンダリング (** などは <strong> に変換される)
         const text = block.raw.trim();
         if (!text) return null;
+        // 「立場宣言」「本チェックは...」 等の冒頭は強調表示
+        const isLead = /^立場宣言|本チェックは/.test(text);
         return (
-          <div key={i} className="text-[12px] text-stone-700 leading-relaxed">
+          <div key={i} className={isLead ? "text-[12px] text-stone-900 leading-relaxed py-2 px-3 rounded-md bg-orange-50/50 border border-orange-100" : "text-[11px] text-stone-600 leading-relaxed"}>
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
-                p: ({ children }) => <p className="my-1 leading-relaxed">{children}</p>,
+                p: ({ children }) => <p className="my-0.5 leading-relaxed">{children}</p>,
                 strong: ({ children }) => <strong className="font-bold text-stone-900">{children}</strong>,
               }}
             >
