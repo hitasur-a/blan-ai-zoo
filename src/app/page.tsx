@@ -93,7 +93,7 @@ export default function Home() {
               <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-white/15 blur-3xl" />
               <div className="pointer-events-none absolute -left-32 -bottom-32 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
               <div className="relative">
-                <div className="font-display text-xs tracking-[0.4em] opacity-80">
+                <div className="font-bold text-sm tracking-[0.35em] uppercase opacity-95">
                   START
                 </div>
                 <div className="mt-5 font-display text-6xl leading-tight">

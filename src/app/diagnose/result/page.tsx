@@ -188,22 +188,22 @@ export default function ResultPage() {
         {/* タイプ結果 (主役の最大演出、動物イラスト + テキスト 横並び + 装飾語の伝統色帯) */}
         <section className="mb-16">
           <div
-            className="rounded-3xl bg-gradient-to-br from-[#fb6103] to-[#c54a02] p-8 md:p-10 text-white shadow-[0_25px_60px_rgba(251,97,3,0.4)] relative overflow-hidden"
+            className="rounded-3xl bg-gradient-to-br from-[#fb6103] to-[#e25515] p-8 md:p-10 text-white shadow-[0_25px_60px_rgba(251,97,3,0.4)] relative overflow-hidden"
           >
-            {/* 装飾語の伝統色アクセント帯 (右上から斜めに、控えめに) */}
+            {/* 装飾語の伝統色アクセント (右下に控えめ、面積/不透明度ダウンで濁り回避) */}
             <div
-              className="pointer-events-none absolute -right-20 -top-20 w-80 h-80 rounded-full blur-3xl opacity-40"
+              className="pointer-events-none absolute -right-32 -bottom-32 w-72 h-72 rounded-full blur-3xl opacity-20"
               style={{ backgroundColor: primaryDecorator.color }}
             />
 
-            <div className="relative grid gap-8 md:grid-cols-[280px_1fr] items-center">
-              {/* 動物イラスト枠 (1:1) — 25 パターン (動物 × 装飾語) */}
-              <div className="relative aspect-square rounded-2xl bg-white/15 backdrop-blur-sm overflow-hidden flex items-center justify-center shadow-inner">
+            <div className="relative grid gap-8 md:grid-cols-[minmax(340px,_44%)_1fr] items-center">
+              {/* 動物イラスト枠 (1:1) — 25 パターン。白枠廃止、繊細な ring で立体感のみ */}
+              <div className="relative aspect-square rounded-2xl overflow-hidden ring-4 ring-white/30 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={`/animals/${primaryAnimal.key}_${primaryDecorator.key}.png`}
                   alt={`${primaryDecorator.name}${primaryAnimal.name}`}
-                  className="w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover"
                   onError={(e) => {
                     // 25 パターン未配置時は動物単体にフォールバック
                     const img = e.currentTarget;
@@ -216,7 +216,7 @@ export default function ResultPage() {
                     }
                   }}
                 />
-                <div className="hidden absolute inset-0 flex flex-col items-center justify-center text-center">
+                <div className="hidden absolute inset-0 flex flex-col items-center justify-center text-center bg-white/15 backdrop-blur-sm">
                   <div className="font-display text-[10px] tracking-[0.3em] opacity-60">ILLUSTRATION</div>
                   <div className="mt-2 font-display text-5xl leading-none">{primaryAnimal.name}</div>
                   <div className="mt-2 text-[10px] opacity-70">納品待ち</div>
@@ -225,7 +225,7 @@ export default function ResultPage() {
 
               {/* テキスト */}
               <div>
-                <div className="font-display text-xs tracking-[0.4em] opacity-80">
+                <div className="font-bold text-sm tracking-[0.35em] uppercase opacity-95">
                   YOUR TYPE
                 </div>
                 {/* タイプ名: 装飾語 (= 伝統色) + 動物 (= 白) で 色分け */}
@@ -235,7 +235,7 @@ export default function ResultPage() {
                     style={{
                       backgroundColor: primaryDecorator.colorSoft,
                       color: "#ffffff",
-                      textShadow: `0 0 30px ${primaryDecorator.color}`,
+                      textShadow: `0 0 12px ${primaryDecorator.color}`,
                     }}
                   >
                     {primaryDecorator.name}
@@ -284,19 +284,19 @@ export default function ResultPage() {
             <h2 className="mt-4 font-display text-2xl">{primaryAnimal.領域}</h2>
             <dl className="mt-6 space-y-4 text-sm">
               <div>
-                <dt className="text-xs font-bold uppercase tracking-widest text-stone-500">現状</dt>
+                <dt className="text-[11px] font-black uppercase tracking-widest text-[#fb6103] border-l-2 border-[#fb6103] pl-2">現状</dt>
                 <dd className="mt-1.5 text-stone-800 leading-relaxed">{primaryAnimal.現状}</dd>
               </div>
               <div>
-                <dt className="text-xs font-bold uppercase tracking-widest text-stone-500">痛み</dt>
+                <dt className="text-[11px] font-black uppercase tracking-widest text-[#fb6103] border-l-2 border-[#fb6103] pl-2">痛み</dt>
                 <dd className="mt-1.5 text-stone-800 leading-relaxed">{primaryAnimal.痛み}</dd>
               </div>
               <div>
-                <dt className="text-xs font-bold uppercase tracking-widest text-stone-500">強み</dt>
+                <dt className="text-[11px] font-black uppercase tracking-widest text-[#fb6103] border-l-2 border-[#fb6103] pl-2">強み</dt>
                 <dd className="mt-1.5 text-stone-800 leading-relaxed">{primaryAnimal.強み}</dd>
               </div>
               <div>
-                <dt className="text-xs font-bold uppercase tracking-widest text-stone-500">AI の方向</dt>
+                <dt className="text-[11px] font-black uppercase tracking-widest text-[#fb6103] border-l-2 border-[#fb6103] pl-2">AI の方向</dt>
                 <dd className="mt-1.5 text-stone-800 leading-relaxed">{primaryAnimal.AIの方向}</dd>
               </div>
             </dl>

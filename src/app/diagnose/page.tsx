@@ -67,8 +67,8 @@ export default function DiagnosePage() {
             >
               ← ポータル
             </Link>
-            <Badge tone="orange" size="sm">
-              Q{currentQuestion.number} / {totalQuestions}
+            <Badge tone="orange" size="md">
+              <span className="text-sm font-bold tracking-wider">Q{currentQuestion.number} / {totalQuestions}</span>
             </Badge>
           </div>
           {/* プログレスバー (neu-inset で凹みに、進捗は塗り) */}
@@ -82,7 +82,7 @@ export default function DiagnosePage() {
 
         {/* 設問 */}
         <section className="mb-12">
-          <div className="mb-4 font-display text-xs tracking-[0.4em] text-[#fb6103]">
+          <div className="mb-4 font-bold text-sm tracking-[0.35em] uppercase text-[#fb6103]">
             QUESTION {currentQuestion.number}
           </div>
           <h1 className="font-display text-3xl leading-relaxed text-stone-900">

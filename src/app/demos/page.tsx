@@ -68,18 +68,18 @@ export default function DemosPage() {
                     {animal.領域}
                   </Badge>
                 </div>
-                <p className="mb-6 text-sm leading-relaxed text-stone-700">
+                <p className="mb-6 text-sm leading-relaxed text-stone-800 font-medium">
                   {animal.特徴1行}
                 </p>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2 items-stretch">
                   {demoKeys.map((demoKey) => {
                     const demo = DEMOS[demoKey];
                     return (
-                      <Link key={demoKey} href={`/demos/${demoKey}`} className="group block">
+                      <Link key={demoKey} href={`/demos/${demoKey}`} className="group block h-full">
                         <Card
                           variant="flat"
                           padding="md"
-                          className="bg-white/60 backdrop-blur-sm transition-all duration-200 group-hover:translate-y-[-2px] group-hover:shadow-lg group-active:translate-y-px"
+                          className="bg-white/60 backdrop-blur-sm transition-all duration-200 group-hover:translate-y-[-2px] group-hover:shadow-lg group-active:translate-y-px h-full flex flex-col"
                         >
                           <div className="mb-2 flex items-baseline gap-3">
                             <span className="font-display text-2xl text-[#fb6103]">
@@ -87,7 +87,7 @@ export default function DemosPage() {
                             </span>
                             <span className="text-base font-bold">{demo.name}</span>
                           </div>
-                          <p className="text-sm leading-relaxed text-stone-600">
+                          <p className="text-sm leading-relaxed text-stone-800">
                             {demo.oneLineSummary}
                           </p>
                         </Card>
