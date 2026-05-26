@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1" />
+  <meta name="theme-color" content="#faf6ee" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>AI Pet — 学習相棒</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%90%95%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* BLAN AI 動物園で iframe 埋め込み用: 3D Canvas (#scene) だけ表示 */
+    /* 元モックの Lesson カード / Lv.XP / チャットパネル / 設定ボタン / 進化チップ 等を全部隠す */
+    #overlay-lesson,
+    #overlay-pet,
+    #chat-panel,
+    #settings-panel,
+    #settings-backdrop,
+    #settings-toggle,
+    #evolution-chip,
+    #evolution-overlay,
+    #xp-popup-host {
+      display: none !important;
+    }
+    /* シーンを画面いっぱいに */
+    html, body, #app, #scene {
+      width: 100% !important;
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: transparent !important;
+      overflow: hidden;
+    }
+    #app {
+      display: block !important;
+      grid-template-columns: none !important;
+    }
+    #scene {
+      position: absolute !important;
+      inset: 0 !important;
+    }
+  </style>
+  <script>
+    // BLAN booth: 来場者ごとに状態リセット。常に puppy 固定。
+    try { localStorage.removeItem('aipet:state:v1'); } catch {}
+  </script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <main id="scene">
+
+      <!-- 左上：レッスンカード -->
+      <div id="overlay-lesson" class="card card-tl">
+        <div class="card-meta">📘 Lesson <span id="lesson-num">2</span> / <span id="lesson-total">12</span></div>
+        <div class="card-title" id="lesson-title">AIってなんだろう？</div>
+        <div class="bar"><div class="bar-fill bar-lesson" id="lesson-progress"></div></div>
+      </div>
+
+      <!-- 右上：ペットステータス + 設定ボタン -->
+      <div id="overlay-pet" class="card card-tr">
+        <div class="pet-row">
+          <div class="pet-info">
+            <div class="card-meta">🐕 Lv.<span id="pet-level">1</span> <span class="pet-stage" id="pet-stage">子犬</span></div>
+            <div class="bar"><div class="bar-fill bar-xp" id="xp-fill"></div></div>
+            <div class="card-meta xp-text"><span id="xp-current">0</span> / <span id="xp-next">500</span> XP</div>
+          </div>
+          <button id="settings-toggle" class="icon-btn" type="button" aria-label="設定">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 進化チップ -->
+      <button id="evolution-chip" class="evolution-chip" type="button" hidden>
+        ✨ 進化準備完了！タップで進化
+      </button>
+
+      <!-- 進化演出 -->
+      <div id="evolution-overlay" class="evolution-overlay" hidden>
+        <div class="evo-flash"></div>
+        <div class="evo-rings"></div>
+        <div class="evo-text">進化中...</div>
+      </div>
+
+      <!-- XPポップアップ -->
+      <div id="xp-popup-host" class="xp-popup-host"></div>
+
+    </main>
+
+    <!-- チャットパネル（Grid分離でデスクトップは右カラム、モバイルはボトムシート） -->
+    <section id="chat-panel" class="chat-panel">
+      <div class="chat-handle" aria-hidden="true"></div>
+      <div id="messages" class="messages"></div>
+      <form id="chat-form" class="chat-form">
+        <input
+          id="chat-input"
+          class="chat-input"
+          type="text"
+          placeholder="話しかけてみよう"
+          autocomplete="off"
+          required
+        />
+        <button type="submit" class="chat-send" aria-label="送信">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+        </button>
+      </form>
+    </section>
+
+    <!-- 設定パネル（隠す） -->
+    <aside id="settings-panel" class="settings-panel" hidden>
+      <header class="settings-header">
+        <h2>設定 / Debug</h2>
+        <button id="settings-close" type="button" class="icon-btn" aria-label="閉じる">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </header>
+
+      <div class="settings-body">
+
+        <section class="settings-section">
+          <h3>音声プロバイダ</h3>
+          <p class="voice-status" id="voice-status">音声検出中...</p>
+        </section>
+
+        <section class="settings-section">
+          <h3>ステージ切替</h3>
+          <p class="settings-desc">本来は学習進捗で自動進化。デモ用に手動切替。</p>
+          <div class="stages">
+            <button class="stage-btn" data-stage="puppy" type="button">子犬</button>
+            <button class="stage-btn" data-stage="young" type="button">若犬</button>
+            <button class="stage-btn" data-stage="adult" type="button">成犬</button>
+          </div>
+          <button id="grow-btn" class="grow-btn" type="button">▶ 自動で3段階成長</button>
+        </section>
+
+        <section class="settings-section">
+          <h3>撮影プリセット</h3>
+          <p class="settings-desc">動画用に状態を一発再現。URLに <code>?preset=puppy200</code> 等でも呼べる。</p>
+          <div class="stages">
+            <button class="stage-btn" data-preset="puppy200" type="button">子犬 200XP</button>
+            <button class="stage-btn" data-preset="young800" type="button">若犬 800XP</button>
+            <button class="stage-btn" data-preset="adult2000" type="button">成犬 2000XP</button>
+          </div>
+          <button id="reset-state-btn" class="grow-btn" type="button">▶ 進捗リセット</button>
+        </section>
+
+        <section class="settings-section">
+          <h3>このモックアップについて</h3>
+          <p class="settings-desc">
+            学習進捗 = 犬の成長で差別化するAIスクールのコンセプト検証版です。<br />
+            技術はvanilla HTML+three.js（throwaway）。本番はNext.js+R3Fで再構築前提。
+          </p>
+        </section>
+
+      </div>
+    </aside>
+
+    <!-- 設定パネル背景クリックで閉じるためのバックドロップ -->
+    <div id="settings-backdrop" class="settings-backdrop" hidden></div>
+
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

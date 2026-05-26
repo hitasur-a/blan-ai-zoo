@@ -1,26 +1,186 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ===========================================================
+ * BLAN AI 動物園 - デザイントークン
+ * v2 (blan-ai.jp) トンマナ + ニューモーフィズム触覚 UX のハイブリッド
+ * =========================================================== */
+
+/* Self-hosted fonts (v2 からコピー) */
+@font-face {
+  font-family: "Forum";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/forum-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Noto Sans JP";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/noto-sans-jp.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Noto Sans JP";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/noto-sans-jp.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Noto Sans JP";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/noto-sans-jp.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Noto Sans JP";
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url("/noto-sans-jp.woff2") format("woff2");
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* BLAN カラーパレット (v2 から) */
+  --color-blan-orange: #fb6103;
+  --color-blan-orange-soft: rgba(251, 97, 3, 0.1);
+  --color-blan-orange-mid: rgba(251, 97, 3, 0.3);
+  --color-blan-ivory: #faf9f6;
+  --color-blan-dark: #1a1a1a;
+  --color-blan-paper: #f5f3ee;
+  --color-blan-paper-deep: #ebe7df;
+
+  /* フォント */
+  --font-forum: "Forum", serif;
+  --font-noto: "Noto Sans JP", sans-serif;
+
+  /* イージング (v2 と統一) */
+  --ease-blan: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #faf9f6;
+  --foreground: #1a1a1a;
+  /* ニューモーフィズム 影パレット (アイボリーベース) */
+  --neu-light: #ffffff;
+  --neu-dark: rgba(184, 165, 138, 0.4);
+  --neu-dark-strong: rgba(184, 165, 138, 0.55);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Noto Sans JP", sans-serif;
+  font-feature-settings: "palt";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: #fb6103;
+  color: #ffffff;
+}
+
+/* ===========================================================
+ * ニューモーフィズム ユーティリティ (Tailwind の @utility と併用)
+ * 触覚的フィードバック = 物理ボタンを押した感覚を再現
+ * =========================================================== */
+
+.neu-raised {
+  background: var(--background);
+  box-shadow:
+    -7px -7px 14px var(--neu-light),
+    7px 7px 14px var(--neu-dark);
+}
+
+.neu-raised-sm {
+  background: var(--background);
+  box-shadow:
+    -4px -4px 8px var(--neu-light),
+    4px 4px 8px var(--neu-dark);
+}
+
+.neu-inset {
+  background: var(--background);
+  box-shadow:
+    inset -4px -4px 8px var(--neu-light),
+    inset 4px 4px 8px var(--neu-dark);
+}
+
+.neu-inset-sm {
+  background: var(--background);
+  box-shadow:
+    inset -2px -2px 5px var(--neu-light),
+    inset 2px 2px 5px var(--neu-dark);
+}
+
+.neu-hover {
+  box-shadow:
+    -3px -3px 7px var(--neu-light),
+    3px 3px 7px var(--neu-dark);
+}
+
+.neu-pressed {
+  box-shadow:
+    inset -3px -3px 6px var(--neu-light),
+    inset 3px 3px 6px var(--neu-dark);
+}
+
+/* ===========================================================
+ * BLAN 装飾要素
+ * =========================================================== */
+
+/* Splash 飛沫 (v2 から流用、JS なしで CSS のみ発火) */
+/* position や size は wrapper 側で指定する、ここでは animation のみ */
+.splash-layer {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0);
+  transform-origin: center;
+  animation: splat 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) var(--delay, 0s) forwards,
+    splatFloat var(--float-dur, 20s) ease-in-out calc(var(--delay, 0s) + 0.7s) infinite alternate;
+}
+@keyframes splat {
+  0% { opacity: 0; transform: scale(0); }
+  35% { opacity: 1; transform: scale(1.15); }
+  55% { opacity: 1; transform: scale(0.96); }
+  75% { opacity: 1; transform: scale(1.03); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes splatFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(var(--fx, 3px), var(--fy, -3px)) scale(1.01); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+/* 背景テクスチャ */
+.bg-paper {
+  background-color: #faf9f6;
+  background-image: url("/bg-texture.webp");
+  background-size: cover;
+  background-blend-mode: multiply;
+}
+
+/* タイポグラフィ */
+.font-display {
+  font-family: var(--font-forum, "Forum"), serif;
+  letter-spacing: 0.02em;
+}
+
+/* Fade-in アニメーション (v2 から) */
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(2rem);
+  transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+}
+.fade-in-up.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }

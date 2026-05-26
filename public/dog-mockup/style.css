@@ -1,0 +1,784 @@
+:root {
+  --bg-warm: #faf6ee;
+  --surface: rgba(255, 252, 247, 0.82);
+  --surface-strong: rgba(255, 252, 247, 0.96);
+  --surface-deep: #f3ece0;
+  --border-soft: rgba(45, 37, 32, 0.08);
+  --text: #2d2520;
+  --text-soft: #6b5d52;
+  --text-faint: #9d8e83;
+  --accent: #c8966c;
+  --accent-deep: #a87850;
+  --accent-2: #5a8a6a;
+  --user-bubble: #2d2520;
+  --user-bubble-text: #fdf9f0;
+  --bot-bubble: rgba(255, 255, 255, 0.95);
+  --bot-bubble-text: #2d2520;
+  --shadow-soft: 0 4px 20px rgba(45, 37, 32, 0.06), 0 1px 3px rgba(45, 37, 32, 0.04);
+  --shadow-card: 0 16px 48px rgba(45, 37, 32, 0.10), 0 2px 8px rgba(45, 37, 32, 0.05);
+  --shadow-pop: 0 24px 64px rgba(200, 150, 108, 0.25), 0 4px 12px rgba(45, 37, 32, 0.08);
+  --tap: 44px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  height: 100dvh; /* dvh 対応ブラウザは動的ビューポート高で上書き（iOS Safariのアドレスバー追従） */
+  font-family: 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', system-ui, sans-serif;
+  background: var(--bg-warm);
+  color: var(--text);
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.01em;
+}
+
+body {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+}
+
+button {
+  font-family: inherit;
+  font-feature-settings: 'palt' 1;
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh; /* iOS Safari のアドレスバー表示時にレイアウト下端が見切れないよう動的VPで上書き */
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+}
+
+#scene {
+  position: relative;
+  background: linear-gradient(180deg, #f1eadc 0%, #e8e0cf 100%);
+  touch-action: none;
+  overflow: hidden;
+  min-width: 0;
+}
+
+#scene canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ============================================================
+   オーバーレイカード（Lesson / Pet）
+   ============================================================ */
+
+.card {
+  position: absolute;
+  background: var(--surface);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  padding: 12px 16px;
+  color: var(--text);
+  box-shadow: var(--shadow-soft);
+  z-index: 10;
+  pointer-events: auto;
+  animation: cardIn 0.6s var(--ease);
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card-tl {
+  top: 16px;
+  left: 16px;
+  min-width: 180px;
+  max-width: 280px;
+}
+
+.card-tr {
+  top: 16px;
+  right: 16px;
+  min-width: 200px;
+}
+
+.pet-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.pet-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-meta {
+  font-size: 11px;
+  color: var(--text-soft);
+  letter-spacing: 0.04em;
+  font-weight: 500;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.pet-stage {
+  display: inline-block;
+  background: rgba(200, 150, 108, 0.18);
+  color: var(--accent-deep);
+  padding: 1px 7px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 4px;
+  letter-spacing: 0.06em;
+}
+
+.bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(45, 37, 32, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.7s var(--ease);
+}
+
+.bar-lesson {
+  background: linear-gradient(90deg, var(--accent-2), #7aaf8c);
+  width: 0%;
+}
+
+.bar-xp {
+  background: linear-gradient(90deg, var(--accent), #e0b88c);
+  width: 0%;
+}
+
+.xp-text {
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+}
+
+/* ============================================================
+   設定アイコンボタン
+   ============================================================ */
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(45, 37, 32, 0.06);
+  border: 1px solid transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  flex-shrink: 0;
+}
+
+.icon-btn:hover {
+  background: rgba(45, 37, 32, 0.1);
+  color: var(--text);
+}
+
+.icon-btn:active {
+  transform: scale(0.92);
+}
+
+/* ============================================================
+   フローティングチャットカード
+   ============================================================ */
+
+.chat-panel {
+  position: relative;
+  background: var(--surface-strong);
+  border-left: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+  animation: chatIn 0.7s var(--ease) 0.2s both;
+}
+
+@keyframes chatIn {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.chat-handle {
+  display: none;
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 18px 18px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.messages > :first-child {
+  margin-top: auto;
+}
+
+.messages::-webkit-scrollbar {
+  width: 4px;
+}
+
+.messages::-webkit-scrollbar-thumb {
+  background: rgba(45, 37, 32, 0.15);
+  border-radius: 2px;
+}
+
+.msg {
+  max-width: 88%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.55;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  animation: msgIn 0.35s var(--ease);
+}
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.msg-user {
+  align-self: flex-end;
+  background: var(--user-bubble);
+  color: var(--user-bubble-text);
+  border-bottom-right-radius: 4px;
+}
+
+.msg-bot {
+  align-self: flex-start;
+  background: var(--bot-bubble);
+  color: var(--bot-bubble-text);
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 4px rgba(45, 37, 32, 0.06);
+}
+
+.msg-body {
+  display: block;
+}
+
+.stage-dir {
+  color: var(--accent-deep);
+  font-style: italic;
+  font-size: 0.85em;
+  letter-spacing: 0.02em;
+  opacity: 0.9;
+}
+
+.stage-dir::before { content: '('; }
+.stage-dir::after { content: ')'; }
+
+.msg-badge {
+  display: inline-block;
+  background: rgba(90, 138, 106, 0.16);
+  color: var(--accent-2);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 6px;
+  letter-spacing: 0.04em;
+}
+
+.chat-form {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px calc(14px + var(--safe-bottom));
+  border-top: 1px solid var(--border-soft);
+  background: rgba(255, 252, 247, 0.6);
+}
+
+.chat-input {
+  flex: 1;
+  height: var(--tap);
+  padding: 0 16px;
+  border: 1px solid var(--border-soft);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--text);
+  border-radius: 999px;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.2s var(--ease);
+  font-family: inherit;
+}
+
+.chat-input::placeholder {
+  color: var(--text-faint);
+}
+
+.chat-input:focus {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.chat-send {
+  width: var(--tap);
+  height: var(--tap);
+  background: var(--text);
+  color: var(--bg-warm);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s var(--ease-bounce);
+  flex-shrink: 0;
+}
+
+.chat-send:hover {
+  background: var(--accent-deep);
+  transform: scale(1.05);
+}
+
+.chat-send:active {
+  transform: scale(0.92);
+}
+
+/* ============================================================
+   進化チップ
+   ============================================================ */
+
+.evolution-chip {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--accent) 0%, #e0b88c 100%);
+  color: #fff;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: var(--shadow-pop);
+  z-index: 20;
+  animation: chipPulse 1.6s ease-in-out infinite;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+}
+
+@keyframes chipPulse {
+  0%, 100% {
+    transform: translateX(-50%) scale(1);
+    box-shadow: 0 16px 48px rgba(200, 150, 108, 0.35), 0 2px 8px rgba(45, 37, 32, 0.06);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.05);
+    box-shadow: 0 24px 64px rgba(200, 150, 108, 0.5), 0 4px 12px rgba(45, 37, 32, 0.1);
+  }
+}
+
+.evolution-chip:active {
+  transform: translateX(-50%) scale(0.95);
+}
+
+.evolution-chip[hidden] {
+  display: none !important;
+}
+
+/* ============================================================
+   進化演出オーバーレイ
+   ============================================================ */
+
+.evolution-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.evolution-overlay[hidden] {
+  display: none !important;
+}
+
+.evo-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(224, 184, 140, 0.7) 30%, rgba(224, 184, 140, 0) 70%);
+  animation: evoFlash 1.4s ease-out;
+}
+
+.evo-rings {
+  position: absolute;
+  inset: 0;
+}
+
+.evo-rings::before,
+.evo-rings::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 3px solid rgba(224, 184, 140, 0.85);
+  border-radius: 50%;
+  animation: evoRing 1.4s ease-out;
+}
+
+.evo-rings::after {
+  animation-delay: 0.25s;
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+@keyframes evoFlash {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes evoRing {
+  0% { width: 20px; height: 20px; opacity: 1; border-width: 6px; }
+  100% { width: 700px; height: 700px; opacity: 0; border-width: 1px; }
+}
+
+.evo-text {
+  position: relative;
+  font-size: 44px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 0 30px rgba(224, 184, 140, 0.95), 0 0 60px rgba(224, 184, 140, 0.6);
+  letter-spacing: 0.12em;
+  animation: evoText 1.4s ease-out;
+}
+
+@keyframes evoText {
+  0% { opacity: 0; transform: scale(0.5); }
+  30% { opacity: 1; transform: scale(1.15); }
+  60% { transform: scale(1); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+/* 進化パーティクル（動画映え用：弾けるスパーク） */
+.evo-particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  margin-top: -4px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow:
+    0 0 12px 2px rgba(255, 224, 160, 0.95),
+    0 0 24px 4px rgba(255, 200, 120, 0.6);
+  pointer-events: none;
+  opacity: 0;
+  animation: evoParticle 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes evoParticle {
+  0% { opacity: 1; transform: translate(0, 0) scale(1); }
+  60% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx, 0), var(--dy, 0)) scale(0.2); }
+}
+
+/* ============================================================
+   XP ポップアップ
+   ============================================================ */
+
+.xp-popup-host {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.xp-popup {
+  position: absolute;
+  color: var(--accent-deep);
+  font-weight: 700;
+  font-size: 17px;
+  pointer-events: none;
+  text-shadow: 0 2px 8px rgba(255, 252, 247, 0.9);
+  animation: xpRise 1.3s ease-out forwards;
+}
+
+@keyframes xpRise {
+  0% { opacity: 0; transform: translateY(0) scale(0.8); }
+  20% { opacity: 1; transform: translateY(-10px) scale(1.15); }
+  100% { opacity: 0; transform: translateY(-60px) scale(1); }
+}
+
+/* ============================================================
+   設定パネル（スライドイン）
+   ============================================================ */
+
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 37, 32, 0.4);
+  z-index: 100;
+  animation: backdropIn 0.3s var(--ease);
+  backdrop-filter: blur(2px);
+}
+
+.settings-backdrop[hidden] {
+  display: none !important;
+}
+
+@keyframes backdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  max-width: 90vw;
+  background: var(--bg-warm);
+  border-left: 1px solid var(--border-soft);
+  box-shadow: -16px 0 48px rgba(45, 37, 32, 0.12);
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+  animation: panelIn 0.4s var(--ease);
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+.settings-panel[hidden] {
+  display: none !important;
+}
+
+@keyframes panelIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.settings-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.settings-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settings-section h3 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
+}
+
+.settings-desc {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-soft);
+}
+
+.voice-status {
+  margin: 0;
+  padding: 10px 14px;
+  background: var(--surface-deep);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.voice-status.voice-on {
+  background: rgba(90, 138, 106, 0.12);
+  color: var(--accent-2);
+}
+
+.stages {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.stage-btn {
+  height: var(--tap);
+  background: var(--surface-deep);
+  color: var(--text);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+
+.stage-btn:hover {
+  border-color: var(--accent);
+}
+
+.stage-btn:active {
+  transform: scale(0.96);
+}
+
+.stage-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(200, 150, 108, 0.35);
+}
+
+.grow-btn {
+  width: 100%;
+  height: var(--tap);
+  background: transparent;
+  color: var(--accent-deep);
+  border: 1px dashed var(--accent);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+
+.grow-btn:hover:not(:disabled) {
+  background: rgba(200, 150, 108, 0.08);
+}
+
+.grow-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   モバイル：チャットをボトムシート化
+   ============================================================ */
+
+@media (max-width: 767px) {
+  /* スマホ：Grid 2行（scene 1fr / chat 自動サイズ・上限あり） */
+  #app {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+  }
+
+  .card-tl {
+    top: 12px;
+    left: 12px;
+    min-width: 0;
+    max-width: 60vw;
+    padding: 10px 12px;
+  }
+
+  .card-tr {
+    top: 12px;
+    right: 12px;
+    padding: 10px 12px;
+  }
+
+  .card-title {
+    font-size: 12px;
+  }
+
+  .card-meta {
+    font-size: 10px;
+  }
+
+  .chat-panel {
+    position: relative;
+    width: 100%;
+    max-height: 45dvh;
+    min-height: 200px;
+    border-radius: 24px 24px 0 0;
+    border-left: none;
+    border-top: 1px solid var(--border-soft);
+    box-shadow: 0 -4px 16px rgba(45, 37, 32, 0.06);
+    animation: chatInBottom 0.6s var(--ease) 0.2s both;
+  }
+
+  @keyframes chatInBottom {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .chat-handle {
+    display: block;
+    width: 36px;
+    height: 4px;
+    background: var(--border-soft);
+    border-radius: 2px;
+    margin: 8px auto 4px;
+  }
+
+  .messages {
+    padding: 8px 16px 6px;
+  }
+
+  .evolution-chip {
+    bottom: 24px;
+  }
+
+  .evo-text {
+    font-size: 32px;
+  }
+}
