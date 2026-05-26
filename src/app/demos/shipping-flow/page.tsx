@@ -1,5 +1,5 @@
 // ⑤ 出荷業務の AI 一気通貫 - ウシ担当
-// AI は構造化 JSON で正規化結果を返す → アプリ側で公式 CSV 組立 + PDF 送付状
+// AI は構造化 JSON で正規化結果を返す → アプリ側で公式 CSV 組立 + PDF 添え状
 
 "use client";
 
@@ -253,11 +253,11 @@ ${customerList}
 # 配送業者
 carrier = ${carrier} (${carrierLabel} / ${carrierSpec.spec})
 
-# 送付状トーン
+# 添え状トーン
 ${toneLabel}
 
 # 指示
-上記名簿を JSON で正規化・名寄せして返してください。送付状本文は上記トーンで 120-180 字。CSV 組立はアプリ側がやるので不要。JSON のみ返してください。`;
+上記名簿を JSON で正規化・名寄せして返してください。添え状本文は上記トーンで 120-180 字。CSV 組立はアプリ側がやるので不要。JSON のみ返してください。`;
 
     try {
       const res = await fetch("/api/chat", {
@@ -323,7 +323,7 @@ ${toneLabel}
     URL.revokeObjectURL(url);
   };
 
-  // 送付状 PDF エクスポート (全顧客連結、A4 縦、日本語対応で html2canvas → jsPDF)
+  // 添え状 PDF エクスポート (全顧客連結、A4 縦、日本語対応で html2canvas → jsPDF)
   const handleExportLettersPdf = async () => {
     if (!aiResult?.letters?.length || pdfBusy) return;
     setPdfBusy(true);
@@ -379,7 +379,7 @@ ${toneLabel}
         pdf.addImage(imgData, "JPEG", MARGIN, MARGIN, PAGE_W - MARGIN * 2, Math.min(imgH, PAGE_H - MARGIN * 2));
       }
       const date = new Date().toISOString().slice(0, 10);
-      pdf.save(`shipping_letters_${date}.pdf`);
+      pdf.save(`shipping_attached_letters_${date}.pdf`);
     } catch (err) {
       setErrorMessage(`PDF 生成失敗: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
@@ -424,7 +424,7 @@ ${toneLabel}
           <DemoHeader demoKey="shipping-flow" metrics={[
             { value: "月10h", label: "削減実績" },
             { value: "3業者", label: "公式 CSV 厳守" },
-            { value: "送付状", label: "AI + PDF 一括" },
+            { value: "添え状", label: "AI + PDF 一括" },
           ]} />
         </div>
 
@@ -448,7 +448,7 @@ ${toneLabel}
                       </select>
                     </label>
                     <label className="block">
-                      <span className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-stone-500">送付状トーン</span>
+                      <span className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-stone-500">添え状トーン</span>
                       <select value={tone} onChange={(e) => setTone(e.target.value as Tone)} disabled={isGenerating} className="w-full h-10 rounded-xl bg-[#faf9f6] neu-inset-sm px-3 text-xs font-medium text-stone-800 outline-none focus:ring-2 focus:ring-[#fb6103] focus:ring-offset-2 focus:ring-offset-[#faf9f6] disabled:opacity-50">
                         <option value="formal">フォーマル</option>
                         <option value="casual">カジュアル</option>
@@ -489,7 +489,7 @@ ${toneLabel}
                 <div className="flex-shrink-0 px-5 pb-4 pt-2 flex gap-2">
                   <Button variant="secondary" size="sm" onClick={() => { setCustomerList(SAMPLE_DATA); setFileInfo(null); }} disabled={isGenerating}>サンプル</Button>
                   <Button variant="primary" size="md" onClick={handleProcess} disabled={!customerList.trim() || isGenerating} className="flex-1">
-                    {isGenerating ? "AI 正規化中..." : "名寄せ → 公式CSV → 送付状"}
+                    {isGenerating ? "AI 正規化中..." : "名寄せ → 公式CSV → 添え状"}
                   </Button>
                 </div>
               </div>
@@ -541,14 +541,23 @@ ${toneLabel}
                     <div className="rounded-lg bg-red-50 px-3 py-2 text-[11px] text-red-700">{errorMessage}</div>
                   )}
                   {!aiResult && !isGenerating && (
-                    <div className="rounded-xl neu-inset-sm p-6 text-center text-xs text-stone-400">名簿を入力して 「名寄せ → 公式CSV → 送付状」 を押してください</div>
+                    <div className="rounded-xl neu-inset-sm p-6 text-center text-xs text-stone-400">名簿を入力して 「名寄せ → 公式CSV → 添え状」 を押してください</div>
+                  )}
+
+                  {/* 用途の説明 */}
+                  {aiResult && (
+                    <div className="rounded-lg bg-blue-50/60 border border-blue-200 px-3 py-2 text-[10px] text-stone-800 leading-relaxed">
+                      <div className="font-bold text-blue-900 mb-0.5">出力の使い分け</div>
+                      <div>📤 <span className="font-bold">CSV</span> = 配送ラベル元データ。{CARRIER_FORMATS[carrier].name} の管理画面にアップロードして送り状を印刷</div>
+                      <div>📨 <span className="font-bold">添え状 PDF</span> = 荷物に同梱する手紙。挨拶文 + 宛先 + 差出人入り、A4 横書き</div>
+                    </div>
                   )}
 
                   {/* CSV プレビュー (表形式) */}
                   {csvPreview && (
                     <div className="rounded-lg border border-orange-200 bg-white overflow-hidden">
                       <div className="flex items-center justify-between px-2.5 py-1.5 bg-orange-50">
-                        <div className="text-[10px] font-bold text-orange-900">公式 CSV プレビュー ({csvPreview.rows.length} 行 × {csvPreview.header.length} 列)</div>
+                        <div className="text-[10px] font-bold text-orange-900">📤 配送ラベル CSV ({csvPreview.rows.length} 行 × {csvPreview.header.length} 列)</div>
                         <Button variant="primary" size="sm" onClick={handleDownloadCsv}>.csv DL</Button>
                       </div>
                       <div className="overflow-x-auto max-h-44">
@@ -617,11 +626,11 @@ ${toneLabel}
                     </div>
                   )}
 
-                  {/* 送付状 (顧客別) */}
+                  {/* 添え状 (顧客別) */}
                   {aiResult?.letters && aiResult.letters.length > 0 && (
                     <div className="rounded-lg border border-stone-200 bg-white">
                       <div className="flex items-center justify-between px-2.5 py-1.5 bg-stone-50">
-                        <div className="text-[10px] font-bold text-stone-800">📨 送付状 ({aiResult.letters.length} 件)</div>
+                        <div className="text-[10px] font-bold text-stone-800">📨 添え状 ({aiResult.letters.length} 件)</div>
                         <Button variant="primary" size="sm" onClick={handleExportLettersPdf} disabled={pdfBusy}>
                           {pdfBusy ? "PDF 生成中..." : "PDF DL"}
                         </Button>
@@ -675,7 +684,7 @@ ${toneLabel}
                   { title: "住所正規化", desc: "都道府県補完・丁目番地表記統一" },
                   { title: "電話番号統一", desc: "ハイフン整形・桁数検証" },
                   { title: "公式 CSV 組立", desc: "アプリ側で列順厳守、UTF-8 BOM + CRLF" },
-                  { title: "送付状 + PDF", desc: "顧客別 A4 で一括 PDF 出力" },
+                  { title: "添え状 + PDF", desc: "顧客別 A4 で一括 PDF 出力" },
                 ].map((s, i) => (
                   <li key={i} className="border-l-2 border-stone-300 pl-3">
                     <div className="font-bold text-xs text-stone-900">{i + 1}. {s.title}</div>
@@ -699,7 +708,7 @@ ${toneLabel}
               <div className="text-[11px] font-bold uppercase tracking-widest text-stone-700 mb-1">このデモの仕組み</div>
               <p className="text-[11px] leading-relaxed text-stone-800">{demo.description}</p>
               <p className="mt-2 text-[11px] leading-relaxed text-stone-700">
-                AI = 名寄せ + 住所/電話正規化 + 送付状本文のみ。CSV の公式列順マッピングはアプリ側コードで厳密に。
+                AI = 名寄せ + 住所/電話正規化 + 添え状本文のみ。CSV の公式列順マッピングはアプリ側コードで厳密に。
               </p>
             </Card>
           </div>

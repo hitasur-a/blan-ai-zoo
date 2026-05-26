@@ -73,7 +73,8 @@ export function DemoHeader({ demoKey, metrics }: DemoHeaderProps) {
         <span className="font-bold text-stone-700">{demo.name}</span>
       </div>
 
-      <div className="mt-6 flex items-start gap-4 flex-wrap">
+      {/* 上段: 番号バッジ + タイトル + 担当動物バナー */}
+      <div className="mt-4 flex items-start gap-4 flex-wrap">
         {/* 番号バッジ (動物カラー) */}
         <div
           className="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-2xl font-display text-2xl shadow-md"
@@ -86,7 +87,7 @@ export function DemoHeader({ demoKey, metrics }: DemoHeaderProps) {
         </div>
 
         {/* タイトル + サマリ */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-[280px]">
           <h1 className="font-display font-bold text-2xl md:text-3xl leading-tight text-stone-900">
             {demo.name}
           </h1>
@@ -95,43 +96,43 @@ export function DemoHeader({ demoKey, metrics }: DemoHeaderProps) {
           </p>
         </div>
 
-        {/* メトリクス (デモの強みを数値訴求) — 白背景 + アクセント色 border で明瞭に */}
-        {metrics && metrics.length > 0 && (
-          <div className="flex-shrink-0 flex gap-2">
-            {metrics.map((m, i) => (
-              <div
-                key={i}
-                className="rounded-2xl px-5 py-3 bg-white shadow-md border-2"
-                style={{ borderColor: accent.fg }}
-              >
-                <div
-                  className="font-display text-3xl leading-none font-black"
-                  style={{ color: accent.fg }}
-                >
-                  {m.value}
-                </div>
-                <div className="mt-1.5 text-xs font-bold tracking-wider text-stone-800">
-                  {m.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
         {/* 担当動物バナー — 白背景 + アクセント色 border */}
         <div
-          className="flex-shrink-0 flex items-center gap-3 rounded-full px-5 py-2 bg-white border-2"
+          className="flex-shrink-0 flex items-center gap-3 rounded-full px-4 py-2 bg-white border-2"
           style={{ borderColor: accent.fg + "40" }}
         >
           <Badge tone="orange" size="sm">担当</Badge>
           <div className="flex items-baseline gap-2">
-            <span className="font-display text-lg font-bold" style={{ color: accent.fg }}>
+            <span className="font-display text-base font-bold" style={{ color: accent.fg }}>
               {animal.name}
             </span>
-            <span className="text-xs font-bold text-stone-800">{animal.領域}</span>
+            <span className="text-[11px] font-bold text-stone-800">{animal.領域}</span>
           </div>
         </div>
       </div>
+
+      {/* 下段: メトリクス (横スクロール許可、wrap でも OK) */}
+      {metrics && metrics.length > 0 && (
+        <div className="mt-3 flex gap-2 flex-wrap">
+          {metrics.map((m, i) => (
+            <div
+              key={i}
+              className="rounded-xl px-4 py-2 bg-white shadow-sm border-2 flex-shrink-0"
+              style={{ borderColor: accent.fg + "60" }}
+            >
+              <div
+                className="font-display text-xl leading-none font-black"
+                style={{ color: accent.fg }}
+              >
+                {m.value}
+              </div>
+              <div className="mt-1 text-[11px] font-bold tracking-wider text-stone-800">
+                {m.label}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </header>
   );
 }
