@@ -199,7 +199,7 @@ export default function PropertyCopyPage() {
         </div>
 
         <section className="flex-1 min-h-0" style={{ display: "grid", gridTemplateColumns: "2.5fr 1fr", gap: "1.25rem", overflow: "hidden" }}>
-          <div className="flex items-center justify-center overflow-hidden">
+          <div className="flex items-stretch justify-center overflow-hidden">
             <div className="relative w-full rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-pink-50 via-white to-rose-50" style={{ aspectRatio: "500 / 370", maxHeight: "100%", maxWidth: "min(100%, calc((100vh - 200px) * 500 / 370))", display: "grid", gridTemplateColumns: "1fr 1fr" }}>
               <div className="flex h-full flex-col bg-white/60 backdrop-blur-sm min-h-0 border-r border-stone-200/40">
                 <div className="flex-shrink-0 px-5 py-4 border-b border-stone-200/40">

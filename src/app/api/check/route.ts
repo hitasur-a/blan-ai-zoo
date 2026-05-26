@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       try {
         const aiStream = await client.messages.stream({
           model: "claude-sonnet-4-5-20250929",
-          max_tokens: 8192,
+          max_tokens: 16000,
           temperature: 0.2,
           system,
           messages: [{ role: "user", content: user }],

@@ -161,7 +161,7 @@ export default function PublicDiffPage() {
           style={{ display: "grid", gridTemplateColumns: "2.5fr 1fr", gap: "1.25rem", overflow: "hidden" }}
         >
           {/* メイン: GrantCompass 本物の iframe */}
-          <div className="flex items-center justify-center overflow-hidden">
+          <div className="flex items-stretch justify-center overflow-hidden">
             <div
               className="relative w-full rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-slate-100 via-white to-slate-50"
               style={{
@@ -229,7 +229,7 @@ export default function PublicDiffPage() {
                 <h3 className="font-display text-sm">GrantCompass の見どころ</h3>
                 <Badge tone="orange" size="sm">本番稼働中</Badge>
               </div>
-              <p className="mb-3 text-[10px] leading-relaxed text-stone-600">
+              <p className="mb-3 text-[11px] leading-relaxed text-stone-800 font-medium">
                 左の画面は <span className="font-bold text-stone-800">本物の GrantCompass SaaS</span> (Vercel + Railway 本番稼働) を埋め込み。J-Grants 公式 API + AI クロールで集めた補助金 296 件のリアル DB に接続中
               </p>
               <ul className="space-y-2">
@@ -238,7 +238,7 @@ export default function PublicDiffPage() {
                     <div className="font-display text-sm leading-none text-stone-800 mt-0.5 min-w-[40px]">{h.num}</div>
                     <div className="min-w-0">
                       <div className="font-bold text-xs text-stone-800">{h.label}</div>
-                      <div className="text-[10px] leading-relaxed text-stone-600">{h.desc}</div>
+                      <div className="text-[11px] leading-relaxed text-stone-800 font-medium">{h.desc}</div>
                     </div>
                   </li>
                 ))}
@@ -251,7 +251,7 @@ export default function PublicDiffPage() {
                 <h3 className="font-display text-sm">📡 監視対象 URL を追加</h3>
                 <Badge tone="info" size="sm">建設業/不動産 拡張</Badge>
               </div>
-              <p className="mb-2 text-[10px] leading-relaxed text-stone-600">
+              <p className="mb-2 text-[11px] leading-relaxed text-stone-800 font-medium">
                 法改正記事・通達・業界団体の URL を追加 → 次回クロールに含めて差分検知対象に
               </p>
               <div className="space-y-1.5 text-[10px]">
@@ -310,14 +310,14 @@ export default function PublicDiffPage() {
 
             <Card variant="flat" padding="md" className="bg-white/60 backdrop-blur-sm flex-shrink-0">
               <h3 className="mb-2 font-display text-sm">AI 対話のサンプル質問</h3>
-              <p className="mb-2 text-[10px] leading-relaxed text-stone-600">
+              <p className="mb-2 text-[11px] leading-relaxed text-stone-800 font-medium">
                 左画面の右下 ChatWidget をタップして AI を起動 → 下記をコピペで試せます
               </p>
               <ul className="space-y-1.5">
                 {SAMPLE_PROMPTS.map((p) => (
                   <li
                     key={p}
-                    className="rounded-lg bg-stone-50 px-3 py-2 text-[10px] leading-relaxed text-stone-700 cursor-text select-text border border-stone-200 hover:border-amber-300 transition-colors"
+                    className="rounded-lg bg-stone-50 px-3 py-2 text-[11px] leading-relaxed text-stone-800 cursor-text select-text border border-stone-200 hover:border-amber-300 transition-colors"
                   >
                     {p}
                   </li>
@@ -329,7 +329,7 @@ export default function PublicDiffPage() {
               <div className="text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-1">
                 技術スタック
               </div>
-              <p className="text-[10px] leading-relaxed text-stone-700">
+              <p className="text-[11px] leading-relaxed text-stone-800">
                 Vite + React 19 + Tailwind 4 (フロント) · FastAPI + PostgreSQL + pgvector (バック) · Playwright クローラー · Claude Haiku/Sonnet · Auth0 · Railway · Vercel
               </p>
               <p className="mt-2 text-[10px] leading-relaxed text-stone-500">

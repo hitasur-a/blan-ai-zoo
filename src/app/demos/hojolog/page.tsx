@@ -77,7 +77,7 @@ export default function HojoLogPage() {
           style={{ display: "grid", gridTemplateColumns: "2.5fr 1fr", gap: "1.25rem", overflow: "hidden" }}
         >
           {/* メイン: HojoLog 本物の iframe */}
-          <div className="flex items-center justify-center overflow-hidden">
+          <div className="flex items-stretch justify-center overflow-hidden">
             <div
               className="relative w-full rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-slate-100 via-white to-slate-50"
               style={{
@@ -146,7 +146,7 @@ export default function HojoLogPage() {
                 <h3 className="font-display text-sm">HojoLog の見どころ</h3>
                 <Badge tone="orange" size="sm">本番稼働中</Badge>
               </div>
-              <p className="mb-3 text-[10px] leading-relaxed text-stone-600">
+              <p className="mb-3 text-[11px] leading-relaxed text-stone-800 font-medium">
                 左の画面は <span className="font-bold text-stone-800">本物の HojoLog SaaS</span> (Vercel 本番) を埋め込み。データは本番 DB のデモデータ。
               </p>
               <ul className="space-y-2">
@@ -155,7 +155,7 @@ export default function HojoLogPage() {
                     <div className="font-display text-lg leading-none text-stone-800 mt-0.5">{h.num}</div>
                     <div className="min-w-0">
                       <div className="font-bold text-xs text-stone-800">{h.label}</div>
-                      <div className="text-[10px] leading-relaxed text-stone-600">{h.desc}</div>
+                      <div className="text-[11px] leading-relaxed text-stone-800 font-medium">{h.desc}</div>
                     </div>
                   </li>
                 ))}
@@ -164,14 +164,14 @@ export default function HojoLogPage() {
 
             <Card variant="flat" padding="md" className="bg-white/60 backdrop-blur-sm flex-shrink-0">
               <h3 className="mb-2 font-display text-sm">補助 AI へのサンプル質問</h3>
-              <p className="mb-2 text-[10px] leading-relaxed text-stone-600">
+              <p className="mb-2 text-[11px] leading-relaxed text-stone-800 font-medium">
                 左画面の右下 <span className="font-bold">✦ ボタン</span> をタップして AI を起動 → 下記をコピペで試せます
               </p>
               <ul className="space-y-1.5">
                 {SAMPLE_PROMPTS.map((p) => (
                   <li
                     key={p}
-                    className="rounded-lg bg-stone-50 px-3 py-2 text-[10px] leading-relaxed text-stone-700 cursor-text select-text border border-stone-200 hover:border-amber-300 transition-colors"
+                    className="rounded-lg bg-stone-50 px-3 py-2 text-[11px] leading-relaxed text-stone-800 cursor-text select-text border border-stone-200 hover:border-amber-300 transition-colors"
                   >
                     {p}
                   </li>
@@ -183,7 +183,7 @@ export default function HojoLogPage() {
               <div className="text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-1">
                 技術スタック
               </div>
-              <p className="text-[10px] leading-relaxed text-stone-700">
+              <p className="text-[11px] leading-relaxed text-stone-800">
                 Next.js 16 App Router · Supabase (PostgreSQL + RLS + Storage) · Anthropic Claude API · Gemini Embedding · Vercel · LINE Messaging API
               </p>
               <p className="mt-2 text-[10px] leading-relaxed text-stone-500">

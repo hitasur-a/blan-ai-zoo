@@ -95,22 +95,22 @@ export function DemoHeader({ demoKey, metrics }: DemoHeaderProps) {
           </p>
         </div>
 
-        {/* メトリクス (デモの強みを数値訴求) */}
+        {/* メトリクス (デモの強みを数値訴求) — 白背景 + アクセント色 border で明瞭に */}
         {metrics && metrics.length > 0 && (
           <div className="flex-shrink-0 flex gap-2">
             {metrics.map((m, i) => (
               <div
                 key={i}
-                className="rounded-2xl px-4 py-2 backdrop-blur-sm shadow-sm"
-                style={{ backgroundColor: accent.bgSoft }}
+                className="rounded-2xl px-4 py-2 bg-white shadow-sm border-2"
+                style={{ borderColor: accent.fg + "40" }}
               >
                 <div
-                  className="font-display text-2xl leading-none"
+                  className="font-display text-2xl leading-none font-bold"
                   style={{ color: accent.fg }}
                 >
                   {m.value}
                 </div>
-                <div className="mt-1 text-[10px] tracking-wider text-stone-600">
+                <div className="mt-1 text-[11px] font-bold tracking-wider text-stone-800">
                   {m.label}
                 </div>
               </div>
@@ -118,17 +118,17 @@ export function DemoHeader({ demoKey, metrics }: DemoHeaderProps) {
           </div>
         )}
 
-        {/* 担当動物バナー (動物カラーの背景帯) */}
+        {/* 担当動物バナー — 白背景 + アクセント色 border */}
         <div
-          className="flex-shrink-0 flex items-center gap-3 rounded-full px-5 py-2 backdrop-blur-sm"
-          style={{ backgroundColor: accent.bgSoft }}
+          className="flex-shrink-0 flex items-center gap-3 rounded-full px-5 py-2 bg-white border-2"
+          style={{ borderColor: accent.fg + "40" }}
         >
           <Badge tone="orange" size="sm">担当</Badge>
           <div className="flex items-baseline gap-2">
-            <span className="font-display text-lg" style={{ color: accent.fg }}>
+            <span className="font-display text-lg font-bold" style={{ color: accent.fg }}>
               {animal.name}
             </span>
-            <span className="text-xs text-stone-600">{animal.領域}</span>
+            <span className="text-xs font-bold text-stone-800">{animal.領域}</span>
           </div>
         </div>
       </div>

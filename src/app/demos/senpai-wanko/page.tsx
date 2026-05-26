@@ -304,7 +304,7 @@ export default function SenpaiWankoPage() {
           }}
         >
           {/* 1カラム目: 統一カード (わんこ + チャット 左右繋がり感、アスペクト比 500:370) */}
-          <div className="flex items-center justify-center overflow-hidden">
+          <div className="flex items-stretch justify-center overflow-hidden">
           <div
             className="relative w-full rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-[#eaf3ee] via-[#f5ecd9] to-[#fff5e8]"
             style={{

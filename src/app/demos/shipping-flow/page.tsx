@@ -249,7 +249,7 @@ ${toneLabel}
         </div>
 
         <section className="flex-1 min-h-0" style={{ display: "grid", gridTemplateColumns: "2.5fr 1fr", gap: "1.25rem", overflow: "hidden" }}>
-          <div className="flex items-center justify-center overflow-hidden">
+          <div className="flex items-stretch justify-center overflow-hidden">
             <div className="relative w-full rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-stone-50 via-white to-stone-100" style={{ aspectRatio: "500 / 370", maxHeight: "100%", maxWidth: "min(100%, calc((100vh - 200px) * 500 / 370))", display: "grid", gridTemplateColumns: "1fr 1fr" }}>
               <div className="flex h-full flex-col bg-white/60 backdrop-blur-sm min-h-0 border-r border-stone-200/40">
                 <div className="flex-shrink-0 px-5 py-4 border-b border-stone-200/40">
@@ -355,7 +355,7 @@ ${toneLabel}
                                 {copiedLetter === i ? "✓ コピー済" : "コピー"}
                               </button>
                             </div>
-                            <div className="text-[10px] leading-relaxed text-stone-700 whitespace-pre-wrap">{l.body}</div>
+                            <div className="text-[11px] leading-relaxed text-stone-800 whitespace-pre-wrap">{l.body}</div>
                             <div className="mt-1 text-[9px] text-stone-400">{l.body.length} 文字</div>
                           </div>
                         ))}
@@ -381,7 +381,7 @@ ${toneLabel}
                 {PROCESS_STEPS.map((s, i) => (
                   <li key={i} className="border-l-2 border-stone-300 pl-3">
                     <div className="font-bold text-xs text-stone-800">{i + 1}. {s.title}</div>
-                    <div className="text-[10px] leading-relaxed text-stone-600">{s.desc}</div>
+                    <div className="text-[11px] leading-relaxed text-stone-800 font-medium">{s.desc}</div>
                   </li>
                 ))}
               </ul>
@@ -399,7 +399,7 @@ ${toneLabel}
             </Card>
             <Card variant="flat" padding="md" className="bg-white/60 backdrop-blur-sm flex-shrink-0">
               <div className="text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-1">このデモの仕組み</div>
-              <p className="text-[10px] leading-relaxed text-stone-700">{demo.description}</p>
+              <p className="text-[11px] leading-relaxed text-stone-800">{demo.description}</p>
               <p className="mt-2 text-[10px] leading-relaxed text-stone-500">※ 本番では Excel/CSV アップロード対応、生成 CSV ダウンロード可。</p>
             </Card>
           </div>
