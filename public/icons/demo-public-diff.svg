@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="256" height="256">
+  <!-- 背景（深い緑） -->
+  <rect x="0" y="0" width="100" height="100" rx="22" fill="#064E3B" />
+
+  <!-- 1. 公的情報ドキュメント本体 -->
+  <path d="M 24 20 
+           H 50 
+           L 62 32 
+           V 73 
+           H 28 
+           C 25 73, 24 71, 24 68 
+           V 24 
+           C 24 21, 25 20, 28 20 
+           Z" fill="#FFFFFF" />
+
+  <!-- 公的機関（神殿）ロゴをあしらう -->
+  <path d="M 32 32 L 40 27 L 48 32 Z" fill="#064E3B" />
+  <line x1="31" y1="38" x2="49" y2="38" stroke="#064E3B" stroke-width="1.5" stroke-linecap="round" />
+  <line x1="35" y1="33" x2="35" y2="37" stroke="#064E3B" stroke-width="1.5" stroke-linecap="round" />
+  <line x1="40" y1="33" x2="40" y2="37" stroke="#064E3B" stroke-width="1.5" stroke-linecap="round" />
+  <line x1="45" y1="33" x2="45" y2="37" stroke="#064E3B" stroke-width="1.5" stroke-linecap="round" />
+
+  <!-- ドキュメント内テキスト -->
+  <g stroke="#064E3B" stroke-width="3" stroke-linecap="round">
+    <line x1="30" y1="46" x2="44" y2="46" />
+    <line x1="30" y1="54" x2="38" y2="54" />
+  </g>
+
+  <!-- 2. 虫眼鏡（レンズ部を書類に重ねる） -->
+  <!-- 書類を丸く削り取る型抜き背景 -->
+  <circle cx="62" cy="60" r="22" fill="#064E3B" />
+  <!-- 柄のスリット -->
+  <path d="M 72 70 L 88 86" fill="none" stroke="#064E3B" stroke-width="11" stroke-linecap="round" />
+
+  <!-- 3. 虫眼鏡の輪郭と柄 -->
+  <circle cx="62" cy="60" r="17.5" fill="none" stroke="#FFFFFF" stroke-width="3.8" />
+  <path d="M 74.4 72.4 L 86 84" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" />
+
+  <!-- 4. 差分検知（不等号） -->
+  <g stroke="#FFFFFF" stroke-width="3.8" stroke-linecap="round">
+    <line x1="53" y1="56" x2="71" y2="56" />
+    <line x1="53" y1="64" x2="71" y2="64" />
+    <line x1="67" y1="50" x2="57" y2="70" />
+  </g>
+</svg>

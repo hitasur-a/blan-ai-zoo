@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="256" height="256">
+  <!-- 背景（深めのロイヤルブルー） -->
+  <rect x="0" y="0" width="100" height="100" rx="22" fill="#1E40AF" />
+
+  <!-- 横に広げたモダンで太めの「H」シンボル -->
+  <path d="M 25 25 H 35 V 45 H 65 V 25 H 75 V 75 H 65 V 55 H 35 V 75 H 25 V 25 Z" fill="#FFFFFF" />
+</svg>

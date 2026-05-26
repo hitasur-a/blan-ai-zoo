@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="256" height="256">
+  <!-- 洗練されたモダンなオレンジ -->
+  <rect x="0" y="0" width="100" height="100" rx="24" fill="#F05A28" />
+
+  <!-- ぽってりと肉厚でわかりやすい王道の肉球 -->
+  <g fill="#FFFFFF">
+    <!-- 指球（パーツごとに独立させつつ、ぽってり感を維持） -->
+    <ellipse cx="22" cy="42" rx="9" ry="13" transform="rotate(-35 22 42)" />
+    <ellipse cx="38" cy="25" rx="10" ry="15" transform="rotate(-12 38 25)" />
+    <ellipse cx="62" cy="25" rx="10" ry="15" transform="rotate(12 62 25)" />
+    <ellipse cx="78" cy="42" rx="9" ry="13" transform="rotate(35 78 42)" />
+    
+    <!-- 掌球（指球とくっつかないように高さを調整し、丸みを持たせる） -->
+    <path d="M 50 88 
+             C 15 88, 12 72, 25 60 
+             C 32 54, 40 58, 44 63 
+             C 47 67, 53 67, 56 63 
+             C 60 58, 68 54, 75 60 
+             C 88 72, 85 88, 50 88 Z" />
+  </g>
+</svg>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="256" height="256">
+    <!-- 洗練されたモダンなワインレッドの背景 -->
+    <rect x="0" y="0" width="100" height="100" rx="24" fill="#7B1F34" />
+
+    <g>
+      <!-- 1. 重要事項説明書（書類ベース） -->
+      <rect x="20" y="16" width="44" height="56" rx="6" fill="#FFFFFF" />
+      
+      <!-- 書類内のテキストライン（背景色で綺麗にくり抜く） -->
+      <!-- タイトル -->
+      <rect x="28" y="24" width="20" height="5" rx="2" fill="#7B1F34" />
+      <!-- 本文ライン -->
+      <rect x="28" y="34" width="28" height="4" rx="2" fill="#7B1F34" />
+      <rect x="28" y="44" width="28" height="4" rx="2" fill="#7B1F34" />
+      <rect x="28" y="54" width="16" height="4" rx="2" fill="#7B1F34" />
+
+      <!-- 2. 重なりを表現するためのワインレッドの境界マスク（背景と同色で一回り大きく描画） -->
+      <circle cx="64" cy="60" r="21" fill="#7B1F34" />
+      <line x1="74" y1="70" x2="88" y2="84" stroke="#7B1F34" stroke-width="16" stroke-linecap="round" />
+
+      <!-- 3. リスクチェックの虫眼鏡（白） -->
+      <!-- 持ち手（柄） -->
+      <line x1="74" y1="70" x2="88" y2="84" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" />
+      <!-- レンズのフレーム -->
+      <circle cx="64" cy="60" r="17" fill="#FFFFFF" />
+      <!-- レンズの内側（背景色でくり抜く） -->
+      <circle cx="64" cy="60" r="10" fill="#7B1F34" />
+
+      <!-- 4. レンズの中の「チェックマーク」（白） -->
+      <path d="M 59 60 L 63 64 L 69 55" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+  </svg>

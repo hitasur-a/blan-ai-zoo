@@ -75,15 +75,14 @@ export function DemoHeader({ demoKey, metrics }: DemoHeaderProps) {
 
       {/* 上段: 番号バッジ + タイトル + 担当動物バナー */}
       <div className="mt-4 flex items-start gap-4 flex-wrap">
-        {/* 番号バッジ (動物カラー) */}
-        <div
-          className="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-2xl font-display text-2xl shadow-md"
-          style={{
-            background: `linear-gradient(135deg, ${accent.bg}, ${accent.fg})`,
-            color: "#ffffff",
-          }}
-        >
-          {demo.number}
+        {/* 番号バッジ (デモ別 SVG アイコン) */}
+        <div className="flex-shrink-0 w-14 h-14 rounded-2xl overflow-hidden shadow-md">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`/icons/demo-${demoKey}.svg`}
+            alt={demo.name}
+            className="w-full h-full"
+          />
         </div>
 
         {/* タイトル + サマリ */}
