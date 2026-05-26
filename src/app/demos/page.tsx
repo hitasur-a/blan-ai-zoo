@@ -44,7 +44,7 @@ export default function DemosPage() {
           >
             ← ポータル
           </Link>
-          <h1 className="mt-6 font-display text-5xl tracking-tight">
+          <h1 className="mt-6 font-display font-bold text-5xl tracking-tight">
             AI 活用デモ 8 つ
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-stone-800 max-w-2xl">
@@ -99,14 +99,14 @@ export default function DemosPage() {
 
         {/* 動物 凡例 */}
         <div className="mt-12 rounded-2xl bg-white/60 backdrop-blur-sm border border-stone-200 p-6">
-          <div className="mb-3 text-[11px] font-bold uppercase tracking-widest text-stone-500">
+          <div className="mb-3 text-sm font-bold uppercase tracking-widest text-stone-500">
             動物タグ凡例 (業務領域グループ)
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
             {Object.values(ANIMALS).map((a) => (
               <div key={a.key} className="flex flex-col gap-0.5">
                 <div className="font-bold text-stone-900">{a.name}</div>
-                <div className="text-[10px] text-stone-600">{a.領域}</div>
+                <div className="text-xs text-stone-600">{a.領域}</div>
               </div>
             ))}
           </div>

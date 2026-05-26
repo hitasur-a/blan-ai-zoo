@@ -101,16 +101,16 @@ export function DemoHeader({ demoKey, metrics }: DemoHeaderProps) {
             {metrics.map((m, i) => (
               <div
                 key={i}
-                className="rounded-2xl px-4 py-2 bg-white shadow-sm border-2"
-                style={{ borderColor: accent.fg + "40" }}
+                className="rounded-2xl px-5 py-3 bg-white shadow-md border-2"
+                style={{ borderColor: accent.fg }}
               >
                 <div
-                  className="font-display text-2xl leading-none font-bold"
+                  className="font-display text-3xl leading-none font-black"
                   style={{ color: accent.fg }}
                 >
                   {m.value}
                 </div>
-                <div className="mt-1 text-[11px] font-bold tracking-wider text-stone-800">
+                <div className="mt-1.5 text-xs font-bold tracking-wider text-stone-800">
                   {m.label}
                 </div>
               </div>
