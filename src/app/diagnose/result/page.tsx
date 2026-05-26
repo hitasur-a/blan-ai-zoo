@@ -282,7 +282,7 @@ export default function ResultPage() {
               業務領域 / 痛みグループ
             </Badge>
             <h2 className="mt-4 font-display text-2xl">{primaryAnimal.領域}</h2>
-            <dl className="mt-6 space-y-4 text-sm">
+            <dl className="mt-6 space-y-4 text-base">
               <div>
                 <dt className="text-[11px] font-black uppercase tracking-widest text-[#fb6103] border-l-2 border-[#fb6103] pl-2">現状</dt>
                 <dd className="mt-1.5 text-stone-800 leading-relaxed">{primaryAnimal.現状}</dd>
@@ -307,7 +307,7 @@ export default function ResultPage() {
               AI への姿勢
             </Badge>
             <h2 className="mt-4 font-display text-2xl">{primaryDecorator.name}</h2>
-            <p className="mt-6 text-sm leading-loose text-stone-800">
+            <p className="mt-6 text-base leading-loose text-stone-800">
               {primaryDecorator.フレーバー文}
             </p>
           </Card>

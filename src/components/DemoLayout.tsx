@@ -73,7 +73,7 @@ export function DemoHeader({ demoKey, metrics }: DemoHeaderProps) {
         <span className="font-bold text-stone-700">{demo.name}</span>
       </div>
 
-      <div className="mt-3 flex items-start gap-4 flex-wrap">
+      <div className="mt-6 flex items-start gap-4 flex-wrap">
         {/* 番号バッジ (動物カラー) */}
         <div
           className="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-2xl font-display text-2xl shadow-md"
@@ -87,7 +87,7 @@ export function DemoHeader({ demoKey, metrics }: DemoHeaderProps) {
 
         {/* タイトル + サマリ */}
         <div className="flex-1 min-w-0">
-          <h1 className="font-display text-2xl md:text-3xl leading-tight text-stone-900">
+          <h1 className="font-display font-bold text-2xl md:text-3xl leading-tight text-stone-900">
             {demo.name}
           </h1>
           <p className="mt-1.5 text-sm leading-relaxed text-stone-700">

@@ -229,7 +229,7 @@ export default function PublicDiffPage() {
                 <h3 className="font-display text-sm">GrantCompass の見どころ</h3>
                 <Badge tone="orange" size="sm">本番稼働中</Badge>
               </div>
-              <p className="mb-3 text-[11px] leading-relaxed text-stone-800 font-medium">
+              <p className="mb-3 text-sm leading-relaxed text-stone-800 font-medium">
                 左の画面は <span className="font-bold text-stone-800">本物の GrantCompass SaaS</span> (Vercel + Railway 本番稼働) を埋め込み。J-Grants 公式 API + AI クロールで集めた補助金 296 件のリアル DB に接続中
               </p>
               <ul className="space-y-2">
