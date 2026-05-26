@@ -193,7 +193,7 @@ export const DEMO_PROMPTS: Record<DemoKey, PromptConfig> = {
     publicDescription:
       "重要事項説明書 (重説) PDF から、買主・借主目線で見落としやすいリスク条項を 30 秒で網羅リストアップ。宅建士の最終確認の 「下書き」 として業務時間を大幅短縮。",
     model: "sonnet",
-    maxTokens: 4096,
+    maxTokens: 8000,
     temperature: 0.2,
   },
 
@@ -291,7 +291,7 @@ export const DEMO_PROMPTS: Record<DemoKey, PromptConfig> = {
     {
       "row_id": "n1",
       "customer": "田中 太郎",
-      "body": "120-180 字の送付状本文。指定 toneLabel に統一。ハッシュタグ・絵文字なし。"
+      "body": "120-180 字の添え状本文。指定 toneLabel に統一。ハッシュタグ・絵文字なし。"
     }
   ],
   "global_flags": [
@@ -308,7 +308,7 @@ export const DEMO_PROMPTS: Record<DemoKey, PromptConfig> = {
 - 重複統合判定は **積極的に行う** (フリガナ違い・敬称違い・スペース有無・住所表記揺れ等)
 - 信頼度低い統合は merge_decisions の confidence を "low" にして残す`,
     publicDescription:
-      "バラバラの顧客名簿 (CSV / Excel / テキスト) を AI が名寄せ + 住所正規化し、構造化 JSON で返す。アプリ側が JSON を各業者の公式 CSV (ヤマト B2 クラウド / 佐川 e-飛伝 III / 日本郵便ゆうパック) に厳密マッピング + 送付状本文を顧客別 PDF 出力。",
+      "バラバラの顧客名簿 (CSV / Excel / テキスト) を AI が名寄せ + 住所正規化し、構造化 JSON で返す。アプリ側が JSON を各業者の公式 CSV (ヤマト B2 クラウド / 佐川 e-飛伝 III / 日本郵便ゆうパック) に厳密マッピング + 添え状本文を顧客別 PDF 出力。",
     model: "sonnet",
     maxTokens: 8000,
     temperature: 0.2,
