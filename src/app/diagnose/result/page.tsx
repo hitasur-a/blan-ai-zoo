@@ -201,15 +201,15 @@ export default function ResultPage() {
               <div className="relative aspect-square rounded-2xl overflow-hidden ring-4 ring-white/30 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`/animals/${primaryAnimal.key}_${primaryDecorator.key}.png`}
+                  src={`/animals/${primaryAnimal.key}_${primaryDecorator.key}.avif`}
                   alt={`${primaryDecorator.name}${primaryAnimal.name}`}
                   className="absolute inset-0 w-full h-full object-cover"
                   onError={(e) => {
-                    // 25 パターン未配置時は動物単体にフォールバック
+                    // AVIF 非対応ブラウザ・配置漏れ時は PNG にフォールバック、それでもダメなら placeholder
                     const img = e.currentTarget;
                     if (!img.dataset.fallback) {
                       img.dataset.fallback = "1";
-                      img.src = `/animals/${primaryAnimal.key}.png`;
+                      img.src = `/animals/${primaryAnimal.key}_${primaryDecorator.key}.png`;
                     } else {
                       img.style.display = "none";
                       img.nextElementSibling?.classList.remove("hidden");
