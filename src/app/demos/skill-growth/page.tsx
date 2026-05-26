@@ -62,23 +62,9 @@ export default function SkillGrowthPage() {
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
 
-  // LocalStorage 復元
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("blan-skill-growth:last");
-      if (saved) {
-        const data = JSON.parse(saved);
-        if (data.name) setName(data.name);
-        if (data.role) setRole(data.role);
-        if (data.years) setYears(data.years);
-        if (data.strengths) setStrengths(data.strengths);
-        if (data.weaknesses) setWeaknesses(data.weaknesses);
-        if (data.goalType) setGoalType(data.goalType);
-        if (data.output) setOutput(data.output);
-        if (data.savedAt) setSavedAt(data.savedAt);
-      }
-    } catch {}
-  }, []);
+  // booth 用途: 来場者ごとに毎回まっさらで起動するため、localStorage 自動復元は無効化。
+  // 保存ロジック (writeToLocalStorage 系) は残してあるので、誤リロード時の保険として動く。
+  // 必要なら DevTools で localStorage.getItem("blan-skill-growth:last") で過去データ取り出し可能。
 
   const stripMarkdown = (text: string): string =>
     text
