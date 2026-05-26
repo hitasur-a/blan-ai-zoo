@@ -433,11 +433,11 @@ export default function SenpaiWankoPage() {
                   <div className="mt-0.5 font-display text-xl leading-none text-[#fb6103]">30 years</div>
                 </div>
 
-                <div className="absolute bottom-20 left-5 right-5 flex flex-wrap gap-1.5 justify-center">
+                <div className="absolute bottom-20 left-5 right-5 flex flex-wrap gap-2 justify-center">
                   {KNOWLEDGE_AREAS.map((area) => (
                     <span
                       key={area}
-                      className="rounded-full bg-white/75 backdrop-blur-sm px-2.5 py-1 text-[10px] font-bold tracking-wider text-stone-700 shadow-sm"
+                      className="rounded-full bg-white/75 backdrop-blur-sm px-3.5 py-1.5 text-xs font-bold tracking-wider text-stone-700 shadow-sm"
                     >
                       {area}
                     </span>
