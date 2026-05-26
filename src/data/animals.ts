@@ -27,7 +27,7 @@ export const ANIMALS: Record<AnimalKey, Animal> = {
   },
   cow: {
     key: "cow",
-    name: "牛",
+    name: "ウシ",
     領域: "反復作業 一気通貫",
     特徴1行: "黙々と業務量を積み上げる勤勉さ。地に足の着いた力強さ",
     現状: "業務量が多く、定型作業が日々の中心。社員 1 人あたり積み上がる",

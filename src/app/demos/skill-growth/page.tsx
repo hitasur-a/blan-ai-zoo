@@ -58,16 +58,28 @@ export default function SkillGrowthPage() {
   const [sectionCount, setSectionCount] = useState(0);
   const [copied, setCopied] = useState(false);
 
+  const stripMarkdown = (text: string): string =>
+    text
+      .replace(/^#{1,6}\s+/gm, "")
+      .replace(/\*\*([^*]+)\*\*/g, "$1")
+      .replace(/(?<!\w)\*([^*\n]+?)\*(?!\w)/g, "$1")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/^>\s+/gm, "")
+      .replace(/^-{3,}\s*$/gm, "")
+      .replace(/^\s*[-+*]\s+/gm, "・ ")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+
   const handleExport = () => {
     if (!output) return;
     const date = new Date().toISOString().slice(0, 10);
     const safeName = (name || "社員").replace(/[\\/:*?"<>|]/g, "_");
-    const header = `# ${safeName} さん AI スキル成長プラン\n\n- 役職: ${role}\n- 経験: ${years || "未記入"}\n- 目指す方向: ${GOAL_LABELS[goalType]}\n- 生成日: ${date}\n\n---\n\n`;
-    const blob = new Blob([header + output], { type: "text/markdown;charset=utf-8;" });
+    const header = `${safeName} さん AI スキル成長プラン\n\n役職: ${role}\n経験: ${years || "未記入"}\n目指す方向: ${GOAL_LABELS[goalType]}\n生成日: ${date}\n\n--------------------\n\n`;
+    const blob = new Blob([header + stripMarkdown(output)], { type: "text/plain;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `growth_plan_${safeName}_${date}.md`;
+    a.download = `growth_plan_${safeName}_${date}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -75,7 +87,7 @@ export default function SkillGrowthPage() {
   const handleCopy = async () => {
     if (!output) return;
     try {
-      await navigator.clipboard.writeText(output);
+      await navigator.clipboard.writeText(stripMarkdown(output));
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
@@ -206,7 +218,7 @@ export default function SkillGrowthPage() {
                       {copied ? "✓ コピー済" : "全文コピー"}
                     </button>
                     <button onClick={handleExport} className="text-[10px] font-bold text-orange-700 hover:text-orange-900 rounded-full bg-orange-50 px-3 py-1 border border-orange-200">
-                      .md 形式で保存
+                      .txt で保存
                     </button>
                   </div>
                 )}

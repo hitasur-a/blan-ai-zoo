@@ -17,22 +17,12 @@ interface Message {
   content: string;
 }
 
-// ベテラン口調を声でも表現するための Web Speech API 設定
-// 幼犬の見た目と低音の声でギャップ演出
-const VETERAN_VOICE = { pitch: 0.85, rate: 0.95, volume: 1.0 };
-
-function pickJapaneseVoice(): SpeechSynthesisVoice | null {
-  if (typeof window === "undefined" || !window.speechSynthesis) return null;
-  const voices = window.speechSynthesis.getVoices();
-  // 男性声 優先
-  const preferred = voices.find((v) => v.lang.startsWith("ja") && /Ichiro|Otoya|Kyoko|Haruka/i.test(v.name));
-  if (preferred) return preferred;
-  const anyJa = voices.find((v) => v.lang.startsWith("ja"));
-  return anyJa ?? null;
-}
+// ベテラン口調を声でも表現するための Fish Audio TTS
+// 元 3d-dog-growth-mockup と同じ refId (puppy 関西弁系ベテラン声) を流用
+const FISH_REF_ID = "21f53a32825443d8a8977d473f8bac5b";
+const FISH_MODEL = "s2-pro";
 
 function stripForSpeech(text: string): string {
-  // 絵文字・記号・冗長な記号類を除去
   return text
     .replace(/[*_`#>~|]/g, "")
     .replace(/\s+/g, " ")
@@ -69,48 +59,65 @@ export default function SenpaiWankoPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [voiceOn, setVoiceOn] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [voiceReady, setVoiceReady] = useState(false);
-  const voiceRef = useRef<SpeechSynthesisVoice | null>(null);
+  const [voiceLoading, setVoiceLoading] = useState(false);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Web Speech 音声カタログの読み込み (ブラウザによって遅延ロード)
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.speechSynthesis) return;
-    const update = () => {
-      const v = pickJapaneseVoice();
-      voiceRef.current = v;
-      setVoiceReady(!!v);
-    };
-    update();
-    window.speechSynthesis.addEventListener("voiceschanged", update);
-    return () => window.speechSynthesis.removeEventListener("voiceschanged", update);
+  const stopSpeaking = useCallback(() => {
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current.currentTime = 0;
+      currentAudioRef.current = null;
+    }
+    setIsSpeaking(false);
+    setVoiceLoading(false);
   }, []);
 
-  const speak = useCallback((text: string) => {
-    if (!voiceOn || typeof window === "undefined" || !window.speechSynthesis) return;
+  const speak = useCallback(async (text: string) => {
+    if (!voiceOn) return;
     const clean = stripForSpeech(text);
     if (!clean) return;
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(clean);
-    if (voiceRef.current) utter.voice = voiceRef.current;
-    utter.lang = "ja-JP";
-    utter.pitch = VETERAN_VOICE.pitch;
-    utter.rate = VETERAN_VOICE.rate;
-    utter.volume = VETERAN_VOICE.volume;
-    utter.onstart = () => setIsSpeaking(true);
-    utter.onend = () => setIsSpeaking(false);
-    utter.onerror = () => setIsSpeaking(false);
-    window.speechSynthesis.speak(utter);
-  }, [voiceOn]);
-
-  const stopSpeaking = useCallback(() => {
-    if (typeof window === "undefined") return;
-    window.speechSynthesis?.cancel();
-    setIsSpeaking(false);
-  }, []);
+    stopSpeaking();
+    setVoiceLoading(true);
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: clean, refId: FISH_REF_ID, model: FISH_MODEL }),
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `TTS API ${res.status}`);
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      currentAudioRef.current = audio;
+      audio.onplay = () => {
+        setVoiceLoading(false);
+        setIsSpeaking(true);
+      };
+      audio.onended = () => {
+        URL.revokeObjectURL(url);
+        setIsSpeaking(false);
+        currentAudioRef.current = null;
+      };
+      audio.onerror = () => {
+        URL.revokeObjectURL(url);
+        setIsSpeaking(false);
+        setVoiceLoading(false);
+        currentAudioRef.current = null;
+      };
+      await audio.play();
+    } catch (err) {
+      console.warn("[senpai-wanko TTS]", err);
+      setVoiceLoading(false);
+      setIsSpeaking(false);
+    }
+  }, [voiceOn, stopSpeaking]);
 
   const send = async (text: string) => {
     const trimmed = text.trim();
@@ -282,16 +289,16 @@ export default function SenpaiWankoPage() {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={toggleVoice}
-                    title={voiceReady ? (voiceOn ? "音声 ON (タップでミュート)" : "音声 OFF (タップで ON)") : "ブラウザに日本語音声なし"}
-                    disabled={!voiceReady}
+                    title={voiceOn ? "音声 ON (タップでミュート)" : "音声 OFF (タップで ON)"}
                     className={cn(
                       "h-8 px-2 rounded-lg inline-flex items-center gap-1 text-xs font-bold transition-colors",
-                      !voiceReady ? "text-stone-300 cursor-not-allowed" :
-                      voiceOn ? (isSpeaking ? "bg-amber-100 text-amber-800" : "text-stone-700 hover:bg-white/60") : "text-stone-400 hover:bg-white/60"
+                      voiceOn ? (isSpeaking || voiceLoading ? "bg-amber-100 text-amber-800" : "text-stone-700 hover:bg-white/60") : "text-stone-400 hover:bg-white/60"
                     )}
                   >
-                    {voiceOn ? <Volume2 size={14} className={isSpeaking ? "animate-pulse" : ""} /> : <VolumeX size={14} />}
-                    <span className="hidden xl:inline">{voiceOn ? "声 ON" : "声 OFF"}</span>
+                    {voiceOn ? <Volume2 size={14} className={isSpeaking || voiceLoading ? "animate-pulse" : ""} /> : <VolumeX size={14} />}
+                    <span className="hidden xl:inline">
+                      {voiceLoading ? "生成中" : voiceOn ? "声 ON" : "声 OFF"}
+                    </span>
                   </button>
                   <Button variant="ghost" size="sm" onClick={handleReset} disabled={isStreaming}>
                     リセット

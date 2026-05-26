@@ -33,20 +33,22 @@ export default function PublicDiffPage() {
 
   useEffect(() => {
     const startedAt = performance.now();
+    let loaded = false;
     const timer = setTimeout(() => {
-      if (iframeStatus === "loading") setIframeStatus("error");
+      if (!loaded) setIframeStatus("error");
     }, 15000);
+    const iframe = iframeRef.current;
     const onLoad = () => {
+      loaded = true;
+      clearTimeout(timer);
       setIframeStatus("loaded");
       setLoadTimeMs(Math.round(performance.now() - startedAt));
     };
-    const iframe = iframeRef.current;
     iframe?.addEventListener("load", onLoad);
     return () => {
       clearTimeout(timer);
       iframe?.removeEventListener("load", onLoad);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const reload = () => {
