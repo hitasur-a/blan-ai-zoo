@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { DEMOS } from "@/data/demos";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -28,11 +28,35 @@ const PROCESS_STEPS = [
   { title: "送付状文面", desc: "顧客ごとにフォーマル/カジュアル の文章生成" },
 ];
 
-const CARRIER_FORMATS = [
-  { name: "ヤマト運輸 B2 クラウド", cols: "送り状種別/出荷予定日/お客様管理番号/お届け先..." },
-  { name: "佐川急便 e-飛伝", cols: "発送日/お客様コード/お届け先郵便番号/お届け先住所..." },
-  { name: "日本郵便 ゆうパック", cols: "差出人/お届け先郵便番号/お届け先名/品名..." },
-];
+// 公式 CSV 仕様 (各業者のドキュメントから引用)
+const CARRIER_FORMATS: Record<Carrier, { name: string; columns: string[]; spec: string }> = {
+  yamato: {
+    name: "ヤマト運輸 B2 クラウド",
+    spec: "発送伝票 (21 列)",
+    columns: [
+      "お客様管理番号", "送り状種別", "クール区分", "伝票番号", "出荷予定日", "お届け予定日",
+      "配達時間帯", "お届け先電話番号", "お届け先郵便番号", "お届け先住所", "お届け先住所アパート名",
+      "お届け先名", "お届け先名カナ", "敬称", "ご依頼主電話番号", "ご依頼主郵便番号",
+      "ご依頼主住所", "ご依頼主名", "品名コード1", "品名1", "個数",
+    ],
+  },
+  sagawa: {
+    name: "佐川急便 e-飛伝 III",
+    spec: "配送データ (11 列)",
+    columns: [
+      "お客様コード", "出荷予定日", "お届け先郵便番号", "お届け先住所1", "お届け先住所2",
+      "お届け先名称1", "お届け先電話番号", "品名1", "個数", "元払着払区分", "代引区分",
+    ],
+  },
+  yubin: {
+    name: "日本郵便ゆうパック",
+    spec: "差出データ (12 列)",
+    columns: [
+      "お問合せ番号", "お客様番号", "差出人氏名", "差出人郵便番号", "差出人住所", "差出人電話番号",
+      "お届け先氏名", "お届け先郵便番号", "お届け先住所", "お届け先電話番号", "内容品", "個数",
+    ],
+  },
+};
 
 export default function ShippingFlowPage() {
   const demo = DEMOS["shipping-flow"];
@@ -44,6 +68,41 @@ export default function ShippingFlowPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [stepCount, setStepCount] = useState(0);
   const [copiedLetter, setCopiedLetter] = useState<number | null>(null);
+  const [fileInfo, setFileInfo] = useState<{ name: string; bytes: number; rows: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (file: File) => {
+    setErrorMessage(null);
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage("ファイルは 5MB 以内");
+      return;
+    }
+    const lower = file.name.toLowerCase();
+    if (!lower.endsWith(".csv") && !lower.endsWith(".txt") && !lower.endsWith(".tsv")) {
+      setErrorMessage("対応形式: .csv / .tsv / .txt");
+      return;
+    }
+    let text = await file.text();
+    // BOM 除去
+    if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+    const rows = text.split("\n").filter((l) => l.trim().length > 0).length;
+    setCustomerList(text);
+    setFileInfo({ name: file.name, bytes: file.size, rows });
+  };
+
+  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFile(file);
+  };
+
+  const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFile(file);
+    e.target.value = "";
+  };
 
   const csvContent = useMemo(() => {
     const match = output.match(/```(?:csv)?\n([^`]*?)\n```/);
@@ -92,10 +151,30 @@ export default function ShippingFlowPage() {
     setErrorMessage(null);
     setStepCount(0);
 
-    const carrierLabel = { yamato: "ヤマト運輸", sagawa: "佐川急便", yubin: "日本郵便ゆうパック" }[carrier];
+    const carrierSpec = CARRIER_FORMATS[carrier];
+    const carrierLabel = carrierSpec.name;
     const toneLabel = tone === "formal" ? "フォーマル (法人取引向け)" : "カジュアル (個人客向け)";
+    const columnsLine = carrierSpec.columns.join(",");
 
-    const userMessage = `# 顧客名簿 (バラバラ)\n${customerList}\n\n# 配送業者: ${carrierLabel}\n# 送付状トーン: ${toneLabel}\n\n# 出力 (Markdown)\n## 1. 正規化サマリ\n何行を何行に統合、判別不能箇所\n\n## 2. ${carrierLabel} 用配送 CSV\n\`\`\`csv\n(ヘッダー + データ)\n\`\`\`\n\n## 3. 送付状文面 (顧客ごと)\n各 120-180 文字、${toneLabel}`;
+    const userMessage = `# 顧客名簿 (バラバラ・正規化前)
+\`\`\`
+${customerList}
+\`\`\`
+
+# 配送業者
+carrier = ${carrier} (${carrierLabel} / ${carrierSpec.spec})
+
+# 配送 CSV カラム仕様 (公式仕様、1 文字も変えない)
+${columnsLine}
+
+# 送付状トーン
+${toneLabel}
+
+# 出力 (Markdown)
+1. 正規化サマリ (名寄せ判定根拠、補完件数、要確認件数)
+2. ${carrierLabel} 用配送 CSV (上記公式カラム順厳守、コードブロック \`\`\`csv ～ \`\`\` で)
+3. 送付状文面 (### 顧客名 で見出し、120-180 字 ${toneLabel} トーン)
+4. 要確認事項 (欠損・矛盾)`;
 
     try {
       const res = await fetch("/api/chat", {
@@ -179,11 +258,38 @@ export default function ShippingFlowPage() {
                     </label>
                   </div>
                 </div>
-                <div className="flex-1 min-h-0 px-5 py-3 overflow-y-auto">
-                  <Textarea value={customerList} onChange={(e) => setCustomerList(e.target.value)} rows={12} placeholder="名前, 住所, 電話番号, 個数 (順不同・形式バラバラで OK)" disabled={isGenerating} className="font-mono text-xs h-full min-h-[180px]" />
+                <div
+                  className="flex-1 min-h-0 px-5 py-3 overflow-y-auto space-y-2"
+                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={onDrop}
+                >
+                  <div className={`rounded-lg border-2 border-dashed transition-colors p-2 text-[11px] ${isDragging ? "border-[#fb6103] bg-orange-50" : "border-stone-200 bg-white/60"}`}>
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <span className="text-stone-600">📊 .csv / .tsv / .txt をドロップ or</span>
+                      <button onClick={() => fileInputRef.current?.click()} disabled={isGenerating} className="text-[#fb6103] font-bold hover:underline">クリックして選択</button>
+                    </div>
+                    {fileInfo && (
+                      <div className="mt-1 text-[10px] text-stone-600 flex items-center gap-1.5">
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-bold text-emerald-700">読込済</span>
+                        <span className="truncate">{fileInfo.name}</span>
+                        <span className="text-stone-400">{fileInfo.rows} 行</span>
+                      </div>
+                    )}
+                  </div>
+                  <input ref={fileInputRef} type="file" accept=".csv,.tsv,.txt,text/csv,text/plain" className="hidden" onChange={onPick} />
+                  <Textarea value={customerList} onChange={(e) => setCustomerList(e.target.value)} rows={9} placeholder="名前, 住所, 電話番号, 個数 (順不同・形式バラバラで OK)" disabled={isGenerating} className="font-mono text-xs min-h-[140px]" />
+                  <div className="rounded-lg bg-stone-50 border border-stone-200 px-2.5 py-2">
+                    <div className="text-[9px] font-bold uppercase tracking-widest text-stone-500 mb-1">
+                      📋 {CARRIER_FORMATS[carrier].name} 公式カラム ({CARRIER_FORMATS[carrier].columns.length} 列)
+                    </div>
+                    <div className="text-[9px] leading-relaxed text-stone-700 font-mono break-all">
+                      {CARRIER_FORMATS[carrier].columns.join(",")}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex-shrink-0 px-5 pb-4 pt-2 flex gap-2">
-                  <Button variant="secondary" size="sm" onClick={() => setCustomerList(SAMPLE_DATA)} disabled={isGenerating}>サンプル</Button>
+                  <Button variant="secondary" size="sm" onClick={() => { setCustomerList(SAMPLE_DATA); setFileInfo(null); }} disabled={isGenerating}>サンプル</Button>
                   <Button variant="primary" size="md" onClick={handleProcess} disabled={!customerList.trim() || isGenerating} className="flex-1">
                     {isGenerating ? "AI が処理中..." : "名寄せ・CSV・送付状 一気通貫"}
                   </Button>
@@ -264,12 +370,12 @@ export default function ShippingFlowPage() {
               </ul>
             </Card>
             <Card variant="flat" padding="md" className="bg-white/60 backdrop-blur-sm flex-shrink-0">
-              <h3 className="mb-2 font-display text-sm">配送業者フォーマット</h3>
+              <h3 className="mb-2 font-display text-sm">公式 CSV 仕様 (3 業者)</h3>
               <ul className="space-y-1.5">
-                {CARRIER_FORMATS.map((c) => (
-                  <li key={c.name} className="text-[10px] leading-relaxed">
+                {Object.entries(CARRIER_FORMATS).map(([key, c]) => (
+                  <li key={key} className={"text-[10px] leading-relaxed " + (key === carrier ? "border-l-2 border-[#fb6103] pl-2" : "pl-2 opacity-70")}>
                     <div className="font-bold text-stone-800">{c.name}</div>
-                    <div className="text-stone-500">{c.cols}</div>
+                    <div className="text-stone-500">{c.spec} · {c.columns.length} 列</div>
                   </li>
                 ))}
               </ul>

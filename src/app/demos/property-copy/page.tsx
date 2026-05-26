@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { DEMOS } from "@/data/demos";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -64,6 +64,53 @@ export default function PropertyCopyPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mediaCount, setMediaCount] = useState(0);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [pdfInfo, setPdfInfo] = useState<{ name: string; pages: number; bytes: number } | null>(null);
+  const [isParsingPdf, setIsParsingPdf] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (file: File) => {
+    setErrorMessage(null);
+    const lower = file.name.toLowerCase();
+    if (lower.endsWith(".pdf")) {
+      setIsParsingPdf(true);
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/parse-pdf", { method: "POST", body: fd });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error ?? "PDF 解析失敗");
+        setPropertyInfo(json.text ?? "");
+        setPdfInfo({ name: json.filename, pages: json.pages, bytes: json.bytes });
+      } catch (err) {
+        setErrorMessage(err instanceof Error ? err.message : String(err));
+      } finally {
+        setIsParsingPdf(false);
+      }
+      return;
+    }
+    if (lower.endsWith(".txt") || lower.endsWith(".md") || file.type === "text/plain") {
+      if (file.size > 2 * 1024 * 1024) { setErrorMessage("テキストは 2MB 以内"); return; }
+      const t = await file.text();
+      setPropertyInfo(t);
+      setPdfInfo({ name: file.name, pages: 0, bytes: file.size });
+      return;
+    }
+    setErrorMessage("対応形式: .pdf / .txt / .md");
+  };
+
+  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFile(file);
+  };
+
+  const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFile(file);
+    e.target.value = "";
+  };
 
   const mediaBlocks = useMemo<MediaBlock[]>(() => {
     if (!output) return [];
@@ -166,8 +213,28 @@ export default function PropertyCopyPage() {
                     ))}
                   </div>
                 </div>
-                <div className="flex-1 min-h-0 px-5 py-3 overflow-y-auto space-y-3">
-                  <Textarea label="物件情報" value={propertyInfo} onChange={(e) => setPropertyInfo(e.target.value)} rows={9} placeholder={SAMPLE_PROPERTY} disabled={isGenerating} />
+                <div
+                  className="flex-1 min-h-0 px-5 py-3 overflow-y-auto space-y-3"
+                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={onDrop}
+                >
+                  <div className={`rounded-xl border-2 border-dashed transition-colors p-2.5 ${isDragging ? "border-pink-500 bg-pink-50" : "border-stone-200 bg-white/60"}`}>
+                    <div className="flex items-center justify-between gap-3 flex-wrap text-[11px]">
+                      <span className="text-stone-600">📄 PDF or .txt をドロップ、または</span>
+                      <button onClick={() => fileInputRef.current?.click()} disabled={isGenerating || isParsingPdf} className="text-pink-700 font-bold hover:underline">クリックして選択</button>
+                    </div>
+                    {isParsingPdf && <div className="text-[10px] text-amber-700 mt-1">PDF 解析中...</div>}
+                    {pdfInfo && (
+                      <div className="text-[10px] text-stone-600 mt-1 flex items-center gap-1.5">
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-bold text-emerald-700">読込済</span>
+                        <span className="truncate">{pdfInfo.name}</span>
+                        {pdfInfo.pages > 0 && <span>({pdfInfo.pages}p)</span>}
+                      </div>
+                    )}
+                  </div>
+                  <input ref={fileInputRef} type="file" accept=".pdf,.txt,.md,application/pdf,text/plain" className="hidden" onChange={onPick} />
+                  <Textarea label="物件情報" value={propertyInfo} onChange={(e) => setPropertyInfo(e.target.value)} rows={8} placeholder={SAMPLE_PROPERTY} disabled={isGenerating} />
                   <Input label="弊社の言い回し (任意)" value={companyStyle} onChange={(e) => setCompanyStyle(e.target.value)} placeholder="例: 関西弁混じり、暖かい雰囲気" disabled={isGenerating} />
                 </div>
                 <div className="flex-shrink-0 px-5 pb-4 pt-2">

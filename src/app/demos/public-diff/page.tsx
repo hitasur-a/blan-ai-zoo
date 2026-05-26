@@ -12,6 +12,25 @@ import { DemoHeader } from "@/components/DemoLayout";
 const GRANTS_DEMO_URL =
   process.env.NEXT_PUBLIC_GRANTS_DEMO_URL ?? "https://grants-compass.vercel.app/demo";
 
+const GRANTS_API_BASE =
+  process.env.NEXT_PUBLIC_GRANTS_API_BASE ?? "https://grants-compass-production.up.railway.app";
+
+const PRESET_TARGETS = [
+  { label: "建設業 法改正", url: "https://www.mlit.go.jp/totikensangyo/", org: "国土交通省" },
+  { label: "不動産業 業法改正", url: "https://www.mlit.go.jp/totikensangyo/const/sosei_const_tk1_000099.html", org: "国土交通省" },
+  { label: "厚労省 労働法改正", url: "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000164708.html", org: "厚生労働省" },
+  { label: "国税庁 通達", url: "https://www.nta.go.jp/law/tsutatsu/", org: "国税庁" },
+];
+
+const AREAS = [
+  "全国", "北海道", "東北", "関東", "東京都", "中部", "近畿", "中国", "四国", "九州", "福岡県",
+];
+
+const PAGE_TYPES = [
+  { value: "list", label: "一覧ページ" },
+  { value: "detail", label: "詳細ページ" },
+];
+
 const HIGHLIGHT_POINTS = [
   { num: "公式", label: "J-Grants API", desc: "デジタル庁公開 API から補助金マスタを自動収集" },
   { num: "AI", label: "クロール", desc: "都道府県・自治体サイトを Playwright で巡回・AI 構造化" },
@@ -30,6 +49,48 @@ export default function PublicDiffPage() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [iframeStatus, setIframeStatus] = useState<"loading" | "loaded" | "error">("loading");
   const [loadTimeMs, setLoadTimeMs] = useState<number | null>(null);
+
+  // URL 追加フォーム
+  const [targetName, setTargetName] = useState("");
+  const [targetUrl, setTargetUrl] = useState("");
+  const [targetOrg, setTargetOrg] = useState("");
+  const [targetArea, setTargetArea] = useState("全国");
+  const [targetPageType, setTargetPageType] = useState("list");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMsg, setSubmitMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+
+  const submitTarget = async () => {
+    if (!targetName.trim() || !targetUrl.trim() || !targetOrg.trim() || isSubmitting) return;
+    setIsSubmitting(true);
+    setSubmitMsg(null);
+    try {
+      const res = await fetch(`${GRANTS_API_BASE}/api/admin/crawl-targets`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: targetName,
+          url: targetUrl,
+          organization: targetOrg,
+          area_name: targetArea,
+          page_type: targetPageType,
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.detail || `${res.status}`);
+      setSubmitMsg({ kind: "ok", text: `登録完了 (id: ${json.id})。次回クロールに含まれます` });
+      setTargetName(""); setTargetUrl(""); setTargetOrg("");
+    } catch (err) {
+      setSubmitMsg({ kind: "err", text: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const applyPreset = (p: { label: string; url: string; org: string }) => {
+    setTargetName(p.label);
+    setTargetUrl(p.url);
+    setTargetOrg(p.org);
+  };
 
   useEffect(() => {
     const startedAt = performance.now();
@@ -158,6 +219,51 @@ export default function PublicDiffPage() {
                   </li>
                 ))}
               </ul>
+            </Card>
+
+            {/* 監視対象 URL 追加フォーム — Railway バックエンド POST /api/admin/crawl-targets に直接送信 */}
+            <Card variant="raised" padding="md" className="flex-shrink-0 border-2 border-amber-200">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-display text-sm">📡 監視対象 URL を追加</h3>
+                <Badge tone="info" size="sm">建設業/不動産 拡張</Badge>
+              </div>
+              <p className="mb-2 text-[10px] leading-relaxed text-stone-600">
+                法改正記事・通達・業界団体の URL を追加 → 次回クロールに含めて差分検知対象に
+              </p>
+              <div className="space-y-1.5 text-[10px]">
+                <div className="flex flex-wrap gap-1 mb-1">
+                  {PRESET_TARGETS.map((p) => (
+                    <button key={p.label} onClick={() => applyPreset(p)} disabled={isSubmitting} className="rounded-full bg-stone-100 hover:bg-amber-100 px-2 py-0.5 text-[9px] font-bold text-stone-700">
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+                <input value={targetName} onChange={(e) => setTargetName(e.target.value)} placeholder="名称 (例: 建設業法改正 2026)" disabled={isSubmitting} className="w-full h-7 rounded border border-stone-200 px-2 text-[10px] focus:outline-none focus:ring-1 focus:ring-amber-400" />
+                <input value={targetUrl} onChange={(e) => setTargetUrl(e.target.value)} placeholder="URL (https://...)" disabled={isSubmitting} className="w-full h-7 rounded border border-stone-200 px-2 text-[10px] focus:outline-none focus:ring-1 focus:ring-amber-400" />
+                <input value={targetOrg} onChange={(e) => setTargetOrg(e.target.value)} placeholder="機関名 (例: 国土交通省)" disabled={isSubmitting} className="w-full h-7 rounded border border-stone-200 px-2 text-[10px] focus:outline-none focus:ring-1 focus:ring-amber-400" />
+                <div className="grid grid-cols-2 gap-1.5">
+                  <select value={targetArea} onChange={(e) => setTargetArea(e.target.value)} disabled={isSubmitting} className="h-7 rounded border border-stone-200 px-1.5 text-[10px] bg-white focus:outline-none focus:ring-1 focus:ring-amber-400">
+                    {AREAS.map((a) => <option key={a} value={a}>{a}</option>)}
+                  </select>
+                  <select value={targetPageType} onChange={(e) => setTargetPageType(e.target.value)} disabled={isSubmitting} className="h-7 rounded border border-stone-200 px-1.5 text-[10px] bg-white focus:outline-none focus:ring-1 focus:ring-amber-400">
+                    {PAGE_TYPES.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+                  </select>
+                </div>
+                <button onClick={submitTarget} disabled={!targetName.trim() || !targetUrl.trim() || !targetOrg.trim() || isSubmitting} className="w-full h-8 rounded-md bg-gradient-to-br from-[#fb6103] to-[#c54a02] text-white text-[10px] font-bold disabled:opacity-40 hover:shadow-md">
+                  {isSubmitting ? "送信中..." : "クロール対象に追加 → Gemini AI で構造化"}
+                </button>
+                {submitMsg && (
+                  <div className={submitMsg.kind === "ok" ? "rounded bg-emerald-50 border border-emerald-200 px-2 py-1 text-[10px] text-emerald-800" : "rounded bg-red-50 border border-red-200 px-2 py-1 text-[10px] text-red-700"}>
+                    {submitMsg.text}
+                  </div>
+                )}
+              </div>
+              <details className="mt-2 text-[9px] text-stone-500">
+                <summary className="cursor-pointer hover:text-stone-700">⚙ 仕組み (Gemini AI クローリング)</summary>
+                <p className="mt-1 leading-relaxed">
+                  Playwright で HTML 取得 → Gemini Flash で構造化 (補助金/法改正/通達) → pgvector で類似度検索 → ChatWidget が RAG で回答。POST {GRANTS_API_BASE}/api/admin/crawl-targets に直接送信。
+                </p>
+              </details>
             </Card>
 
             <Card variant="flat" padding="md" className="bg-white/60 backdrop-blur-sm flex-shrink-0">

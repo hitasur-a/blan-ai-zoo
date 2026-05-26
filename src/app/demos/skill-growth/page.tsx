@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DEMOS } from "@/data/demos";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -57,6 +57,28 @@ export default function SkillGrowthPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [sectionCount, setSectionCount] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedOutput, setEditedOutput] = useState("");
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [shareCopied, setShareCopied] = useState(false);
+
+  // LocalStorage 復元
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("blan-skill-growth:last");
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.name) setName(data.name);
+        if (data.role) setRole(data.role);
+        if (data.years) setYears(data.years);
+        if (data.strengths) setStrengths(data.strengths);
+        if (data.weaknesses) setWeaknesses(data.weaknesses);
+        if (data.goalType) setGoalType(data.goalType);
+        if (data.output) setOutput(data.output);
+        if (data.savedAt) setSavedAt(data.savedAt);
+      }
+    } catch {}
+  }, []);
 
   const stripMarkdown = (text: string): string =>
     text
@@ -94,6 +116,64 @@ export default function SkillGrowthPage() {
       // ignore
     }
   };
+
+  const handleStartEdit = () => {
+    setEditedOutput(output);
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = () => {
+    setOutput(editedOutput);
+    setIsEditing(false);
+    handleLocalSave(editedOutput);
+  };
+
+  const handleCancelEdit = () => {
+    setEditedOutput("");
+    setIsEditing(false);
+  };
+
+  const handleLocalSave = (currentOutput: string = output) => {
+    const now = new Date().toISOString();
+    try {
+      localStorage.setItem(
+        "blan-skill-growth:last",
+        JSON.stringify({ name, role, years, strengths, weaknesses, goalType, output: currentOutput, savedAt: now }),
+      );
+      setSavedAt(now);
+    } catch {}
+  };
+
+  const handleShare = async () => {
+    if (!output) return;
+    try {
+      // base64 で URL に encode (実装は シンプル: name + plan のみ、長さ制限のため)
+      const payload = { n: name, r: role, p: output.slice(0, 6000) };
+      const json = JSON.stringify(payload);
+      const b64 = btoa(unescape(encodeURIComponent(json)));
+      const url = `${window.location.origin}/demos/skill-growth?plan=${b64}`;
+      await navigator.clipboard.writeText(url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      // ignore
+    }
+  };
+
+  // URL から共有プラン読込
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const plan = params.get("plan");
+    if (plan) {
+      try {
+        const json = decodeURIComponent(escape(atob(plan)));
+        const data = JSON.parse(json);
+        if (data.n) setName(data.n);
+        if (data.r) setRole(data.r);
+        if (data.p) setOutput(data.p);
+      } catch {}
+    }
+  }, []);
 
   const handleGenerate = async () => {
     if (!name.trim() || !role.trim() || isGenerating) return;
@@ -213,13 +293,35 @@ export default function SkillGrowthPage() {
                   </div>
                 </div>
                 {output && !isGenerating && (
-                  <div className="flex-shrink-0 px-5 py-2 flex items-center justify-end gap-2 border-b border-stone-200/40">
-                    <button onClick={handleCopy} className="text-[10px] font-bold text-stone-700 hover:text-stone-900 rounded-full bg-white/80 px-3 py-1 border border-stone-200">
-                      {copied ? "✓ コピー済" : "全文コピー"}
-                    </button>
-                    <button onClick={handleExport} className="text-[10px] font-bold text-orange-700 hover:text-orange-900 rounded-full bg-orange-50 px-3 py-1 border border-orange-200">
-                      .txt で保存
-                    </button>
+                  <div className="flex-shrink-0 px-5 py-2 flex items-center justify-end gap-2 border-b border-stone-200/40 flex-wrap">
+                    {!isEditing ? (
+                      <>
+                        <button onClick={handleStartEdit} className="text-[10px] font-bold text-stone-700 hover:text-stone-900 rounded-full bg-white/80 px-3 py-1 border border-stone-200">
+                          ✎ 編集
+                        </button>
+                        <button onClick={() => handleLocalSave()} className="text-[10px] font-bold text-stone-700 hover:text-stone-900 rounded-full bg-white/80 px-3 py-1 border border-stone-200">
+                          {savedAt ? `保存済 ${new Date(savedAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}` : "保存"}
+                        </button>
+                        <button onClick={handleShare} className="text-[10px] font-bold text-blue-700 hover:text-blue-900 rounded-full bg-blue-50 px-3 py-1 border border-blue-200">
+                          {shareCopied ? "✓ URL コピー済" : "🔗 共有 URL"}
+                        </button>
+                        <button onClick={handleCopy} className="text-[10px] font-bold text-stone-700 hover:text-stone-900 rounded-full bg-white/80 px-3 py-1 border border-stone-200">
+                          {copied ? "✓ コピー済" : "全文コピー"}
+                        </button>
+                        <button onClick={handleExport} className="text-[10px] font-bold text-orange-700 hover:text-orange-900 rounded-full bg-orange-50 px-3 py-1 border border-orange-200">
+                          .txt で保存
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button onClick={handleSaveEdit} className="text-[10px] font-bold text-white rounded-full bg-[#fb6103] px-3 py-1">
+                          ✓ 保存して反映
+                        </button>
+                        <button onClick={handleCancelEdit} className="text-[10px] font-bold text-stone-700 rounded-full bg-stone-100 px-3 py-1 border border-stone-200">
+                          キャンセル
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
                 {isGenerating && (
@@ -232,7 +334,17 @@ export default function SkillGrowthPage() {
                 )}
                 <div className="flex-1 min-h-0 px-5 py-4 overflow-y-auto">
                   {errorMessage && <div className="mb-3 rounded-lg bg-red-50 px-4 py-2 text-xs text-red-700">{errorMessage}</div>}
-                  {output ? <MarkdownRenderer>{output}</MarkdownRenderer> : <div className="rounded-xl neu-inset-sm p-8 text-center text-xs text-stone-400">プロフィールを入力して 「3 ヶ月学習プランを生成」 を押してください</div>}
+                  {isEditing ? (
+                    <textarea
+                      value={editedOutput}
+                      onChange={(e) => setEditedOutput(e.target.value)}
+                      className="w-full h-full min-h-[400px] rounded-xl border border-stone-200 bg-white p-3 text-xs leading-relaxed font-mono resize-none focus:outline-none focus:ring-2 focus:ring-[#fb6103]/40"
+                    />
+                  ) : output ? (
+                    <MarkdownRenderer>{output}</MarkdownRenderer>
+                  ) : (
+                    <div className="rounded-xl neu-inset-sm p-8 text-center text-xs text-stone-400">プロフィールを入力して 「3 ヶ月学習プランを生成」 を押してください</div>
+                  )}
                 </div>
               </div>
             </div>
