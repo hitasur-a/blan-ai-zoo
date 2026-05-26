@@ -1,191 +1,60 @@
 // ② 契約書リスクチェック - フクロウ担当
-// 実 BLAN Risk Check (https://blan-risk-check.vercel.app/contract) を iframe で埋め込み
+// zoo 内に直接実装 (PDF / Claude Sonnet 4.6 ストリーミング / 重要度別 / .txt 保存)
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { DemoHeader } from "@/components/DemoLayout";
+import { RiskCheckApp } from "@/components/RiskCheckApp";
 
-const RISK_CHECK_BASE =
-  process.env.NEXT_PUBLIC_RISK_CHECK_URL ?? "https://blan-risk-check.vercel.app";
-const CONTRACT_URL = `${RISK_CHECK_BASE}/contract`;
+const SAMPLE_CONTRACT = `業務委託契約書
 
-const HIGHLIGHT_POINTS = [
-  { num: "全件", label: "件数を絞らない", desc: "重要度 [高/中/低] で階層化し漏らさず抽出" },
-  { num: "根拠", label: "条文必須", desc: "民法 / 下請法 / 労基法 / 独禁法 など条文番号を併記" },
-  { num: "立場", label: "ユーザー指定厳守", desc: "買い手 / 売り手 / 中立 を契約原文に左右されず固守" },
-  { num: "PDF", label: "ドラッグ&ドロップ", desc: "pdf-parse でサーバー側抽出、~10MB まで対応" },
-];
+第1条 (目的)
+甲は乙に対し、別途定める仕様書に基づくウェブサイト制作業務 (以下「本件業務」という) を委託し、乙はこれを受託する。
 
-const SAMPLE_PROMPTS = [
-  "業務委託契約書をドロップして買い手目線でチェック",
-  "雇用契約書を売り手 (使用者) 目線で確認",
-  "NDA を中立目線でレビュー",
-  "外注先との契約で下請法上の問題箇所を洗う",
-];
+第2条 (委託料の支払)
+1. 本件業務の対価は、金 ¥1,200,000 (税別) とする。
+2. 乙は甲に対し、本契約締結日から 7 日以内に契約金額の全額を支払うものとする。
+3. 支払方法は、甲が指定する銀行口座への振込とし、振込手数料は乙の負担とする。
+
+第3条 (検収)
+甲は、納品物の受領後 3 日以内に検収を行い、不具合がある場合は乙に通知するものとする。
+当該期間内に通知がない場合は、検収完了とみなす。
+
+第4条 (損害賠償)
+本契約に関連して乙に損害が生じた場合、甲はその全額を賠償する責任を負うものとする。
+甲の損害賠償責任には上限を設けない。
+
+第5条 (知的財産権)
+本件業務の遂行過程で生じた一切の知的財産権 (著作権、著作者人格権、特許権等を含む) は、
+納品時に甲に譲渡されるものとし、乙は著作者人格権を行使しないものとする。
+
+第6条 (秘密保持)
+本契約の内容及び本件業務に関連して知り得た一切の情報は、甲乙双方の事前の書面による
+承諾なく第三者に開示してはならない。本義務は本契約終了後も期限の定めなく存続する。
+
+第7条 (契約解除)
+甲は、乙に対し書面による通知の上、何らの理由なくいつでも本契約を解除することができる。
+この場合、乙は既に履行した業務の対価を請求することはできない。
+
+第8条 (管轄)
+本契約に関する紛争は、東京地方裁判所を専属的合意管轄裁判所とする。
+`;
 
 export default function ContractRiskPage() {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [iframeStatus, setIframeStatus] = useState<"loading" | "loaded" | "error">("loading");
-  const [loadTimeMs, setLoadTimeMs] = useState<number | null>(null);
-
-  useEffect(() => {
-    const startedAt = performance.now();
-    let loaded = false;
-    const timer = setTimeout(() => {
-      if (!loaded) setIframeStatus("error");
-    }, 15000);
-    const iframe = iframeRef.current;
-    const onLoad = () => {
-      loaded = true;
-      clearTimeout(timer);
-      setIframeStatus("loaded");
-      setLoadTimeMs(Math.round(performance.now() - startedAt));
-    };
-    iframe?.addEventListener("load", onLoad);
-    return () => {
-      clearTimeout(timer);
-      iframe?.removeEventListener("load", onLoad);
-    };
-  }, []);
-
-  const reload = () => {
-    setIframeStatus("loading");
-    setLoadTimeMs(null);
-    if (iframeRef.current) iframeRef.current.src = CONTRACT_URL;
-  };
-
   return (
-    <div className="h-screen bg-paper text-stone-900 flex flex-col overflow-hidden">
-      <main className="mx-auto max-w-[1800px] w-full px-6 pt-4 pb-2 flex-1 flex flex-col min-h-0">
-        <div className="flex-shrink-0 mb-3">
+    <div className="min-h-screen bg-paper text-stone-900">
+      <main className="mx-auto max-w-[1800px] w-full px-6 pt-4 pb-6">
+        <div className="mb-4">
           <DemoHeader
             demoKey="contract-risk"
             metrics={[
-              { value: "本番稼働", label: "Next.js 16 + Vercel" },
-              { value: "全件抽出", label: "重要度 高/中/低 階層化" },
+              { value: "全件", label: "重要度 [高/中/低] 階層化" },
+              { value: "根拠条文", label: "民法/下請法/労基法 等を必須引用" },
               { value: "PDF対応", label: "ドラッグ&ドロップ" },
             ]}
           />
         </div>
-
-        <section
-          className="flex-1 min-h-0"
-          style={{ display: "grid", gridTemplateColumns: "2.5fr 1fr", gap: "1.25rem", overflow: "hidden" }}
-        >
-          {/* メイン: BLAN Risk Check 本物の iframe */}
-          <div className="flex items-center justify-center overflow-hidden">
-            <div
-              className="relative w-full rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-slate-100 via-white to-slate-50"
-              style={{
-                aspectRatio: "500 / 370",
-                maxHeight: "100%",
-                maxWidth: "min(100%, calc((100vh - 200px) * 500 / 370))",
-              }}
-            >
-              <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 py-1.5 bg-white/90 backdrop-blur-sm border-b border-slate-200">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-red-400" />
-                  <span className="w-2 h-2 rounded-full bg-amber-400" />
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  <span className="ml-2 text-[10px] font-mono text-slate-500 truncate">
-                    blan-risk-check.vercel.app/contract
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {iframeStatus === "loaded" && loadTimeMs != null && (
-                    <span className="text-[9px] font-bold text-emerald-700">接続 {loadTimeMs}ms</span>
-                  )}
-                  {iframeStatus === "loading" && (
-                    <span className="text-[9px] font-bold text-amber-700 inline-flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                      接続中
-                    </span>
-                  )}
-                  {iframeStatus === "error" && (
-                    <button onClick={reload} className="text-[9px] font-bold text-red-700 hover:underline">
-                      接続失敗・再試行
-                    </button>
-                  )}
-                  <Badge tone="orange" size="sm">本物</Badge>
-                </div>
-              </div>
-
-              <iframe
-                ref={iframeRef}
-                src={CONTRACT_URL}
-                className="absolute left-0 right-0 bottom-0 w-full bg-white"
-                style={{ top: 30, height: "calc(100% - 30px)", border: "none" }}
-                title="BLAN Risk Check — 契約書"
-                allow="clipboard-read; clipboard-write"
-              />
-
-              {iframeStatus === "error" && (
-                <div className="absolute inset-0 top-[30px] flex flex-col items-center justify-center bg-white/95 backdrop-blur-sm">
-                  <div className="text-sm font-bold text-red-700 mb-2">BLAN Risk Check に接続できませんでした</div>
-                  <button
-                    onClick={reload}
-                    className="rounded-full bg-stone-900 text-white text-xs font-bold px-4 py-2 hover:opacity-90"
-                  >
-                    再試行
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* 右カラム: 解説 + サンプル */}
-          <div className="flex h-full flex-col gap-3 overflow-y-auto min-h-0">
-            <Card variant="raised" padding="md" className="flex-shrink-0">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-display text-sm">BLAN Risk Check の見どころ</h3>
-                <Badge tone="orange" size="sm">本番稼働中</Badge>
-              </div>
-              <p className="mb-3 text-[10px] leading-relaxed text-stone-600">
-                左の画面は <span className="font-bold text-stone-800">本物の BLAN Risk Check SaaS</span> (Vercel 本番) を埋め込み。Claude Sonnet 4.6 + サーバー側 PDF パース
-              </p>
-              <ul className="space-y-2">
-                {HIGHLIGHT_POINTS.map((h) => (
-                  <li key={h.label} className="flex items-start gap-2.5 border-l-2 border-amber-300 pl-3">
-                    <div className="font-display text-sm leading-none text-stone-800 mt-0.5 min-w-[40px]">{h.num}</div>
-                    <div className="min-w-0">
-                      <div className="font-bold text-xs text-stone-800">{h.label}</div>
-                      <div className="text-[10px] leading-relaxed text-stone-600">{h.desc}</div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </Card>
-
-            <Card variant="flat" padding="md" className="bg-white/60 backdrop-blur-sm flex-shrink-0">
-              <h3 className="mb-2 font-display text-sm">体験シナリオ例</h3>
-              <ul className="space-y-1.5">
-                {SAMPLE_PROMPTS.map((p) => (
-                  <li
-                    key={p}
-                    className="rounded-lg bg-stone-50 px-3 py-2 text-[10px] leading-relaxed text-stone-700 border border-stone-200"
-                  >
-                    {p}
-                  </li>
-                ))}
-              </ul>
-            </Card>
-
-            <Card variant="flat" padding="md" className="bg-white/60 backdrop-blur-sm flex-shrink-0">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-1">
-                技術スタック
-              </div>
-              <p className="text-[10px] leading-relaxed text-stone-700">
-                Next.js 16 + Tailwind 4 (フロント) · Anthropic Claude Sonnet 4.6 (AI) · pdf-parse (PDF テキスト抽出) · Vercel (Edge + Node)
-              </p>
-              <p className="mt-2 text-[10px] leading-relaxed text-stone-500">
-                ※ 本サービスの出力は資格者 (弁護士・行政書士等) の最終確認のための「下書き」。最終判断は資格者が行います。
-              </p>
-            </Card>
-          </div>
-        </section>
+        <RiskCheckApp mode="contract" sampleText={SAMPLE_CONTRACT} />
       </main>
     </div>
   );
