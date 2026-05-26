@@ -158,10 +158,10 @@ export default function PublicDiffPage() {
 
         <section
           className="flex-1 min-h-0"
-          style={{ display: "grid", gridTemplateColumns: "2.5fr 1fr", gap: "1.25rem", overflow: "hidden" }}
+          style={{ display: "grid", gridTemplateColumns: "minmax(0, 2.5fr) minmax(0, 1fr)", gap: "1.25rem", overflow: "hidden" }}
         >
           {/* メイン: GrantCompass 本物の iframe */}
-          <div className="flex items-stretch justify-center overflow-hidden">
+          <div className="flex items-stretch justify-center overflow-hidden min-w-0">
             <div
               className="relative w-full rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-slate-100 via-white to-slate-50"
               style={{
@@ -223,7 +223,7 @@ export default function PublicDiffPage() {
           </div>
 
           {/* 右カラム: 解説 + サンプル質問 */}
-          <div className="flex h-full flex-col gap-3 overflow-y-auto min-h-0">
+          <div className="flex h-full flex-col gap-3 overflow-y-auto min-h-0 min-w-0 break-words">
             <Card variant="raised" padding="md" className="flex-shrink-0">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-display text-sm">GrantCompass の見どころ</h3>

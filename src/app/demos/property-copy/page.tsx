@@ -10,6 +10,7 @@ import { Input, Textarea } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { DemoHeader } from "@/components/DemoLayout";
 import { cn } from "@/lib/utils";
+import { logAnalytics } from "@/lib/analytics";
 
 const MEDIA_TAGS = ["Suumo", "HOMES", "Instagram", "Twitter/X"];
 
@@ -149,6 +150,17 @@ export default function PropertyCopyPage() {
 
   const handleGenerate = async () => {
     if (!propertyInfo.trim() || isGenerating) return;
+    logAnalytics({
+      demoKey: "property-copy",
+      kind: "generate",
+      payload: {
+        propertyInfo: propertyInfo.slice(0, 2000),
+        propertyInfoChars: propertyInfo.length,
+        companyStyle: companyStyle.slice(0, 500),
+        pdfFilename: pdfInfo?.name,
+        pdfPages: pdfInfo?.pages,
+      },
+    });
     setIsGenerating(true);
     setOutput("");
     setErrorMessage(null);

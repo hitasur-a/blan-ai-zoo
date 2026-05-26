@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/Badge";
 import { DemoHeader } from "@/components/DemoLayout";
 import { cn } from "@/lib/utils";
 import { getCachedTts, setCachedTts } from "@/lib/tts-cache";
+import { logAnalytics } from "@/lib/analytics";
 
 interface Message {
   role: "user" | "assistant";
@@ -271,6 +272,17 @@ export default function SenpaiWankoPage() {
   const send = async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || isStreaming) return;
+    logAnalytics({
+      demoKey: "senpai-wanko",
+      kind: "chat",
+      payload: {
+        message: trimmed.slice(0, 1000),
+        hasKnowledge: knowledgeFiles.length > 0,
+        knowledgeFileCount: knowledgeFiles.length,
+        knowledgeChars: knowledgeText.length,
+        knowledgeFileNames: knowledgeFiles.map((f) => f.name),
+      },
+    });
     const userMessage: Message = { role: "user", content: trimmed };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);

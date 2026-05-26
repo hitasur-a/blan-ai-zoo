@@ -10,6 +10,7 @@ import { Input, Textarea } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { DemoHeader } from "@/components/DemoLayout";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
+import { logAnalytics } from "@/lib/analytics";
 
 type GoalType = "ai-utilization" | "leadership" | "specialist";
 const GOAL_LABELS: Record<GoalType, string> = {
@@ -163,6 +164,18 @@ export default function SkillGrowthPage() {
 
   const handleGenerate = async () => {
     if (!name.trim() || !role.trim() || isGenerating) return;
+    logAnalytics({
+      demoKey: "skill-growth",
+      kind: "generate",
+      payload: {
+        name: name.slice(0, 100),
+        role: role.slice(0, 200),
+        years: years.slice(0, 50),
+        strengths: strengths.slice(0, 500),
+        weaknesses: weaknesses.slice(0, 500),
+        goalType,
+      },
+    });
     setIsGenerating(true);
     setOutput("");
     setErrorMessage(null);

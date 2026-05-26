@@ -13,6 +13,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Markdown } from "./RiskMarkdown";
+import { logAnalytics } from "@/lib/analytics";
 
 export type Mode = "contract" | "explanation";
 export type Perspective = "buyer" | "seller" | "neutral";
@@ -115,6 +116,19 @@ export function RiskCheckApp({ mode, sampleText }: Props) {
 
   const run = async () => {
     if (!text.trim() || isStreaming) return;
+    logAnalytics({
+      demoKey: mode === "contract" ? "contract-risk" : "explanation-risk",
+      kind: "risk-check",
+      payload: {
+        mode,
+        perspective,
+        propertyType: mode === "explanation" ? propertyType : undefined,
+        documentText: text.slice(0, 2000),
+        documentChars: text.length,
+        pdfFilename: pdfInfo?.name,
+        pdfPages: pdfInfo?.pages,
+      },
+    });
     setIsStreaming(true);
     setOutput("");
     setError(null);
