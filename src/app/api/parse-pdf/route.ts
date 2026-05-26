@@ -12,8 +12,11 @@ export async function POST(req: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // pdf-parse は CommonJS なので dynamic import
-    const pdfParseMod = await import("pdf-parse");
+    // pdf-parse の index.js はモジュール初期化時に ./test/data/05-versions-space.pdf を
+    // open しようとして ENOENT を吐く有名なバグがある。
+    // lib/pdf-parse.js を直接 import するとそのテストコードを bypass できる
+    // ref: https://gitlab.com/autokent/pdf-parse/-/issues/24
+    const pdfParseMod = await import("pdf-parse/lib/pdf-parse.js");
     const pdfParse = (pdfParseMod.default ?? pdfParseMod) as (buf: Buffer) => Promise<{ text: string; numpages: number }>;
     const result = await pdfParse(buffer);
 

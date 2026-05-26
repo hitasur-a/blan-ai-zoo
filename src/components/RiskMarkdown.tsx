@@ -1,19 +1,30 @@
 "use client";
 
+import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-// リスク見出しの重要度を着色するため、見出しテキストから取り出して span でくるむ
-function colorizeHeading(children: React.ReactNode): React.ReactNode {
-  if (typeof children !== "string" && !Array.isArray(children)) return children;
-  const text = Array.isArray(children) ? children.join("") : children;
-  if (typeof text !== "string") return children;
+// React の子ノードから素直にテキストを取り出す (要素入れ子を再帰的に展開)
+function extractText(node: React.ReactNode): string {
+  if (node == null || typeof node === "boolean") return "";
+  if (typeof node === "string") return node;
+  if (typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(extractText).join("");
+  if (React.isValidElement(node)) {
+    const props = node.props as { children?: React.ReactNode };
+    return extractText(props.children);
+  }
+  return "";
+}
 
-  const high = /重要度[ \-:：]?\[?高\]?|—\s*重要度\s*\[?高\]?/.test(text);
-  const mid = /重要度[ \-:：]?\[?中\]?|—\s*重要度\s*\[?中\]?/.test(text);
-  const low = /重要度[ \-:：]?\[?低\]?|—\s*重要度\s*\[?低\]?/.test(text);
+// 重要度を本文から検出してクラスを返す。children は元のまま返す (テキスト潰さない)
+function colorizeHeading(children: React.ReactNode): React.ReactNode {
+  const text = extractText(children);
+  const high = /重要度[\s\-:：]*\[?\s*高\s*\]?/.test(text);
+  const mid = /重要度[\s\-:：]*\[?\s*中\s*\]?/.test(text);
+  const low = /重要度[\s\-:：]*\[?\s*低\s*\]?/.test(text);
   const cls = high ? "risk-high" : mid ? "risk-mid" : low ? "risk-low" : "";
-  return cls ? <span className={cls}>{text}</span> : text;
+  return cls ? <span className={cls}>{children}</span> : children;
 }
 
 export function Markdown({ children }: { children: string }) {

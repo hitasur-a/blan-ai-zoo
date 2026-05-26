@@ -379,6 +379,22 @@ function detachLipSync() {
   speechActive = false;
 }
 
+// 外部 (親フレーム) から postMessage で受け取る振幅
+// BLAN AI 動物園では zoo の senpai-wanko ページが audio AnalyserNode で測定した振幅を
+// postMessage('blan-lipsync', amp 0-1) で送ってくる
+let externalLipAmp = 0;
+let externalLipUntil = 0;
+window.addEventListener('message', (e) => {
+  if (!e.data || typeof e.data !== 'object') return;
+  if (e.data.type === 'blan-lipsync') {
+    externalLipAmp = Math.max(0, Math.min(1, e.data.amp || 0));
+    externalLipUntil = performance.now() + 200; // 200ms 以内に次の値が来なければ 0 へフェード
+  } else if (e.data.type === 'blan-lipsync-stop') {
+    externalLipAmp = 0;
+    externalLipUntil = 0;
+  }
+});
+
 function getLipSyncAmp() {
   if (lipSyncAnalyser && lipSyncDataArray) {
     lipSyncAnalyser.getByteTimeDomainData(lipSyncDataArray);
@@ -388,6 +404,10 @@ function getLipSyncAmp() {
       sum += v * v;
     }
     return Math.min(1, Math.sqrt(sum / lipSyncDataArray.length) * 5);
+  }
+  // 外部から振幅を受け取り中
+  if (externalLipUntil > performance.now()) {
+    return externalLipAmp;
   }
   if (speechActive) {
     return 0.3 + Math.sin(performance.now() / 90) * 0.15 + Math.random() * 0.15;

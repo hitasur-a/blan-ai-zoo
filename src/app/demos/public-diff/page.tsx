@@ -59,10 +59,15 @@ export default function PublicDiffPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMsg, setSubmitMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
+  const [lastTargetId, setLastTargetId] = useState<number | null>(null);
+  const [isCrawling, setIsCrawling] = useState(false);
+  const [crawlMsg, setCrawlMsg] = useState<string | null>(null);
+
   const submitTarget = async () => {
     if (!targetName.trim() || !targetUrl.trim() || !targetOrg.trim() || isSubmitting) return;
     setIsSubmitting(true);
     setSubmitMsg(null);
+    setLastTargetId(null);
     try {
       const res = await fetch(`${GRANTS_API_BASE}/api/admin/crawl-targets`, {
         method: "POST",
@@ -77,12 +82,31 @@ export default function PublicDiffPage() {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.detail || `${res.status}`);
-      setSubmitMsg({ kind: "ok", text: `登録完了 (id: ${json.id})。次回クロールに含まれます` });
+      setSubmitMsg({ kind: "ok", text: `登録完了 (id: ${json.id})` });
+      setLastTargetId(json.id);
       setTargetName(""); setTargetUrl(""); setTargetOrg("");
     } catch (err) {
       setSubmitMsg({ kind: "err", text: err instanceof Error ? err.message : String(err) });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const triggerCrawl = async () => {
+    if (isCrawling) return;
+    setIsCrawling(true);
+    setCrawlMsg(null);
+    try {
+      const res = await fetch(`${GRANTS_API_BASE}/api/admin/crawl/run`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) throw new Error(`${res.status}`);
+      setCrawlMsg("クロール開始 (バックグラウンド実行中)。完了まで 1-3 分。完了後、左 iframe をリロードすると新案件が出てきます");
+    } catch (err) {
+      setCrawlMsg(`クロール起動失敗: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setIsCrawling(false);
     }
   };
 
@@ -257,12 +281,30 @@ export default function PublicDiffPage() {
                     {submitMsg.text}
                   </div>
                 )}
+                {/* 登録後にクロール即実行 */}
+                {lastTargetId != null && (
+                  <button onClick={triggerCrawl} disabled={isCrawling} className="w-full h-8 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold disabled:opacity-40 flex items-center justify-center gap-1.5">
+                    {isCrawling ? "クロール起動中..." : "▶ 今すぐクロール実行 (Gemini で構造化)"}
+                  </button>
+                )}
+                {crawlMsg && (
+                  <div className="rounded bg-amber-50 border border-amber-200 px-2 py-1 text-[10px] text-amber-800 leading-relaxed">
+                    {crawlMsg}
+                  </div>
+                )}
               </div>
               <details className="mt-2 text-[9px] text-stone-500">
-                <summary className="cursor-pointer hover:text-stone-700">⚙ 仕組み (Gemini AI クローリング)</summary>
-                <p className="mt-1 leading-relaxed">
-                  Playwright で HTML 取得 → Gemini Flash で構造化 (補助金/法改正/通達) → pgvector で類似度検索 → ChatWidget が RAG で回答。POST {GRANTS_API_BASE}/api/admin/crawl-targets に直接送信。
-                </p>
+                <summary className="cursor-pointer hover:text-stone-700">⚙ 仕組み (Gemini AI クローリング) + ユースケース</summary>
+                <div className="mt-1 leading-relaxed space-y-1">
+                  <p><strong>フロー:</strong></p>
+                  <p>1. URL 登録 (上記フォーム) → <code>POST /api/admin/crawl-targets</code></p>
+                  <p>2. クロール起動 (上記ボタン) → <code>POST /api/admin/crawl/run</code></p>
+                  <p>3. Playwright で HTML 取得 → Gemini Flash で構造化 (補助金/法改正/通達/締切等を JSON 抽出)</p>
+                  <p>4. PostgreSQL + pgvector に保存、類似度 0.3 以上で検索ヒット対象に</p>
+                  <p>5. 左 iframe (`grants-compass.vercel.app/demo`) をリロード → 新案件が一覧に出てくる</p>
+                  <p>6. ChatWidget が RAG で参照 → 「○○の最新法改正は?」で新規 URL の内容を答える</p>
+                  <p><strong>ユースケース例 (建設業):</strong> 建設業法改正の国交省 URL を登録 → クロール → ChatWidget で「うちの工事業者に影響ある改正は?」と聞くと該当箇所抽出</p>
+                </div>
               </details>
             </Card>
 

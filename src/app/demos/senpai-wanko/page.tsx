@@ -61,6 +61,70 @@ export default function SenpaiWankoPage() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceLoading, setVoiceLoading] = useState(false);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const sourceMapRef = useRef<WeakMap<HTMLAudioElement, MediaElementAudioSourceNode>>(new WeakMap());
+  const lipSyncRafRef = useRef<number | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // iframe に振幅を送る (lipsync)
+  const sendLipsync = useCallback((amp: number) => {
+    const iframe = iframeRef.current;
+    if (!iframe?.contentWindow) return;
+    try {
+      iframe.contentWindow.postMessage({ type: "blan-lipsync", amp }, "*");
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const stopLipSync = useCallback(() => {
+    if (lipSyncRafRef.current != null) {
+      cancelAnimationFrame(lipSyncRafRef.current);
+      lipSyncRafRef.current = null;
+    }
+    const iframe = iframeRef.current;
+    try {
+      iframe?.contentWindow?.postMessage({ type: "blan-lipsync-stop" }, "*");
+    } catch {}
+  }, []);
+
+  const startLipSync = useCallback((audio: HTMLAudioElement) => {
+    try {
+      if (!audioCtxRef.current) {
+        const Ctx = (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext);
+        audioCtxRef.current = new Ctx();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") void ctx.resume();
+      let source = sourceMapRef.current.get(audio);
+      if (!source) {
+        source = ctx.createMediaElementSource(audio);
+        sourceMapRef.current.set(audio, source);
+      }
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+      analyser.connect(ctx.destination);
+      analyserRef.current = analyser;
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      const tick = () => {
+        if (analyserRef.current !== analyser) return;
+        analyser.getByteTimeDomainData(data);
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) {
+          const v = (data[i] - 128) / 128;
+          sum += v * v;
+        }
+        const amp = Math.min(1, Math.sqrt(sum / data.length) * 5);
+        sendLipsync(amp);
+        lipSyncRafRef.current = requestAnimationFrame(tick);
+      };
+      lipSyncRafRef.current = requestAnimationFrame(tick);
+    } catch (err) {
+      console.warn("[lipsync init]", err);
+    }
+  }, [sendLipsync]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -72,9 +136,10 @@ export default function SenpaiWankoPage() {
       currentAudioRef.current.currentTime = 0;
       currentAudioRef.current = null;
     }
+    stopLipSync();
     setIsSpeaking(false);
     setVoiceLoading(false);
-  }, []);
+  }, [stopLipSync]);
 
   const speak = useCallback(async (text: string) => {
     if (!voiceOn) return;
@@ -99,14 +164,17 @@ export default function SenpaiWankoPage() {
       audio.onplay = () => {
         setVoiceLoading(false);
         setIsSpeaking(true);
+        startLipSync(audio);
       };
       audio.onended = () => {
         URL.revokeObjectURL(url);
+        stopLipSync();
         setIsSpeaking(false);
         currentAudioRef.current = null;
       };
       audio.onerror = () => {
         URL.revokeObjectURL(url);
+        stopLipSync();
         setIsSpeaking(false);
         setVoiceLoading(false);
         currentAudioRef.current = null;
@@ -117,7 +185,7 @@ export default function SenpaiWankoPage() {
       setVoiceLoading(false);
       setIsSpeaking(false);
     }
-  }, [voiceOn, stopSpeaking]);
+  }, [voiceOn, stopSpeaking, startLipSync, stopLipSync]);
 
   const send = async (text: string) => {
     const trimmed = text.trim();
@@ -143,6 +211,8 @@ export default function SenpaiWankoPage() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
+      let assistantText = "";
+      let ttsTriggered = false; // 最初の 1 文で TTS 早期起動
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -156,6 +226,7 @@ export default function SenpaiWankoPage() {
           try {
             const json = JSON.parse(payload);
             if (json.text) {
+              assistantText += json.text;
               setMessages((prev) => {
                 const updated = [...prev];
                 const last = updated[updated.length - 1];
@@ -164,26 +235,30 @@ export default function SenpaiWankoPage() {
                 }
                 return updated;
               });
+              // 最初の文 (句点・！・？で終わる、15 文字以上) が完成したら即 TTS 起動
+              // → Fish Audio API の 3-5 秒待ちをストリーミングと並列化
+              if (voiceOn && !ttsTriggered) {
+                const m = assistantText.match(/^[\s\S]{15,200}?[。！？]/);
+                if (m) {
+                  ttsTriggered = true;
+                  speak(m[0]);
+                }
+              }
             } else if (json.error) throw new Error(json.error);
           } catch (e) {
             if (e instanceof Error && e.message.startsWith("API error")) throw e;
           }
         }
       }
+      // ストリーム終了時点で TTS まだ起動してない場合 (短文すぎ等) フォールバック
+      if (voiceOn && !ttsTriggered && assistantText) {
+        speak(assistantText.slice(0, 200));
+      }
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : String(err));
       setMessages((prev) => prev.slice(0, -1));
     } finally {
       setIsStreaming(false);
-      // ストリーム完了後、最後のアシスタントメッセージを音声で再生
-      setMessages((prev) => {
-        const last = prev[prev.length - 1];
-        if (last?.role === "assistant" && last.content) {
-          // 直接 prev を見て speak (effect 依存に入れず、ここで即実行)
-          setTimeout(() => speak(last.content), 100);
-        }
-        return prev;
-      });
     }
   };
 
@@ -243,6 +318,7 @@ export default function SenpaiWankoPage() {
             {/* 左: 3D わんこ (iframe 埋め込み) */}
             <div className="relative h-full overflow-hidden">
               <iframe
+                ref={iframeRef}
                 src="/dog-mockup/index.html"
                 className="absolute inset-0 w-full h-full border-0"
                 title="3D わんこ ビューア"

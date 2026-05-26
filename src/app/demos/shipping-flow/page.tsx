@@ -79,16 +79,33 @@ export default function ShippingFlowPage() {
       return;
     }
     const lower = file.name.toLowerCase();
-    if (!lower.endsWith(".csv") && !lower.endsWith(".txt") && !lower.endsWith(".tsv")) {
-      setErrorMessage("対応形式: .csv / .tsv / .txt");
+    const isCsvLike = lower.endsWith(".csv") || lower.endsWith(".txt") || lower.endsWith(".tsv");
+    const isExcel = lower.endsWith(".xlsx") || lower.endsWith(".xls");
+    if (!isCsvLike && !isExcel) {
+      setErrorMessage("対応形式: .xlsx / .xls / .csv / .tsv / .txt");
       return;
     }
-    let text = await file.text();
-    // BOM 除去
-    if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
-    const rows = text.split("\n").filter((l) => l.trim().length > 0).length;
-    setCustomerList(text);
-    setFileInfo({ name: file.name, bytes: file.size, rows });
+    try {
+      let text = "";
+      if (isExcel) {
+        // xlsx は dynamic import (バンドル軽量化)
+        const XLSX = await import("xlsx");
+        const buf = await file.arrayBuffer();
+        const wb = XLSX.read(buf, { type: "array" });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        // CSV 形式に変換 (1 シート目のみ)
+        text = XLSX.utils.sheet_to_csv(sheet);
+      } else {
+        text = await file.text();
+      }
+      // BOM 除去
+      if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+      const rows = text.split("\n").filter((l) => l.trim().length > 0).length;
+      setCustomerList(text);
+      setFileInfo({ name: file.name, bytes: file.size, rows });
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "ファイル読み込み失敗");
+    }
   };
 
   const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -266,7 +283,7 @@ ${toneLabel}
                 >
                   <div className={`rounded-lg border-2 border-dashed transition-colors p-2 text-[11px] ${isDragging ? "border-[#fb6103] bg-orange-50" : "border-stone-200 bg-white/60"}`}>
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <span className="text-stone-600">📊 .csv / .tsv / .txt をドロップ or</span>
+                      <span className="text-stone-600">📊 .xlsx / .xls / .csv / .tsv / .txt をドロップ or</span>
                       <button onClick={() => fileInputRef.current?.click()} disabled={isGenerating} className="text-[#fb6103] font-bold hover:underline">クリックして選択</button>
                     </div>
                     {fileInfo && (
@@ -277,7 +294,7 @@ ${toneLabel}
                       </div>
                     )}
                   </div>
-                  <input ref={fileInputRef} type="file" accept=".csv,.tsv,.txt,text/csv,text/plain" className="hidden" onChange={onPick} />
+                  <input ref={fileInputRef} type="file" accept=".csv,.tsv,.txt,.xlsx,.xls,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" className="hidden" onChange={onPick} />
                   <Textarea value={customerList} onChange={(e) => setCustomerList(e.target.value)} rows={9} placeholder="名前, 住所, 電話番号, 個数 (順不同・形式バラバラで OK)" disabled={isGenerating} className="font-mono text-xs min-h-[140px]" />
                   <div className="rounded-lg bg-stone-50 border border-stone-200 px-2.5 py-2">
                     <div className="text-[9px] font-bold uppercase tracking-widest text-stone-500 mb-1">
