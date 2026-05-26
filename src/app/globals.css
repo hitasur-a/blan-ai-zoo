@@ -185,6 +185,11 @@ body {
 .border-rule { border-color: var(--rule); }
 .bg-paper-fill { background-color: var(--paper-fill); }
 
+/* リスクチェック アコーディオン (details/summary) のデフォルト marker 削除 */
+.md summary { list-style: none; }
+.md summary::-webkit-details-marker { display: none; }
+.md summary::marker { display: none; }
+
 /* Markdown 出力レンダリング (リスクチェック) */
 .md h2 { font-weight: 800; font-size: 1.05rem; margin-top: 1.4em; margin-bottom: 0.5em; color: var(--ink); border-bottom: 1px solid var(--rule); padding-bottom: 0.3em; }
 .md h3 { font-weight: 700; font-size: 0.95rem; margin-top: 1.2em; margin-bottom: 0.3em; color: var(--ink); }

@@ -204,9 +204,9 @@ export function RiskCheckApp({ mode, sampleText }: Props) {
   };
 
   return (
-    <div className="grid lg:grid-cols-[1fr_1fr] gap-4 lg:gap-6">
+    <div className="grid lg:grid-cols-[1fr_1fr] gap-4 lg:gap-6 h-full min-h-0">
       {/* 左: 入力 */}
-      <section className="bg-white rounded-2xl border border-rule shadow-sm flex flex-col min-h-[600px]">
+      <section className="bg-white rounded-2xl border border-rule shadow-sm flex flex-col min-h-0">
         <div className="px-5 py-4 border-b border-rule flex items-center justify-between flex-wrap gap-2">
           <h2 className="font-bold text-base flex items-center gap-2">
             <FileText size={18} className="text-[color:var(--accent)]" />
@@ -336,7 +336,7 @@ export function RiskCheckApp({ mode, sampleText }: Props) {
       </section>
 
       {/* 右: 結果 */}
-      <section className="bg-white rounded-2xl border border-rule shadow-sm flex flex-col min-h-[600px]">
+      <section className="bg-white rounded-2xl border border-rule shadow-sm flex flex-col min-h-0">
         <div className="px-5 py-4 border-b border-rule flex items-center justify-between flex-wrap gap-2">
           <h2 className="font-bold text-base flex items-center gap-2">
             <AlertTriangle size={18} className="text-[color:var(--accent)]" />

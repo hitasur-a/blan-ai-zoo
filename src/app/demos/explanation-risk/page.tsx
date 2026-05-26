@@ -56,9 +56,9 @@ const SAMPLE_EXPLANATION = `重要事項説明書 (賃貸借契約用)
 
 export default function ExplanationRiskPage() {
   return (
-    <div className="min-h-screen bg-paper text-stone-900">
-      <main className="mx-auto max-w-[1800px] w-full px-6 pt-4 pb-6">
-        <div className="mb-4">
+    <div className="h-screen bg-paper text-stone-900 flex flex-col overflow-hidden">
+      <main className="mx-auto max-w-[1800px] w-full px-6 pt-4 pb-4 flex-1 flex flex-col min-h-0">
+        <div className="flex-shrink-0 mb-3">
           <DemoHeader
             demoKey="explanation-risk"
             metrics={[
@@ -68,7 +68,9 @@ export default function ExplanationRiskPage() {
             ]}
           />
         </div>
-        <RiskCheckApp mode="explanation" sampleText={SAMPLE_EXPLANATION} />
+        <div className="flex-1 min-h-0">
+          <RiskCheckApp mode="explanation" sampleText={SAMPLE_EXPLANATION} />
+        </div>
       </main>
     </div>
   );

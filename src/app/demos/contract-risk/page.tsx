@@ -42,9 +42,9 @@ const SAMPLE_CONTRACT = `業務委託契約書
 
 export default function ContractRiskPage() {
   return (
-    <div className="min-h-screen bg-paper text-stone-900">
-      <main className="mx-auto max-w-[1800px] w-full px-6 pt-4 pb-6">
-        <div className="mb-4">
+    <div className="h-screen bg-paper text-stone-900 flex flex-col overflow-hidden">
+      <main className="mx-auto max-w-[1800px] w-full px-6 pt-4 pb-4 flex-1 flex flex-col min-h-0">
+        <div className="flex-shrink-0 mb-3">
           <DemoHeader
             demoKey="contract-risk"
             metrics={[
@@ -54,7 +54,9 @@ export default function ContractRiskPage() {
             ]}
           />
         </div>
-        <RiskCheckApp mode="contract" sampleText={SAMPLE_CONTRACT} />
+        <div className="flex-1 min-h-0">
+          <RiskCheckApp mode="contract" sampleText={SAMPLE_CONTRACT} />
+        </div>
       </main>
     </div>
   );
