@@ -41,7 +41,7 @@ export const DEMO_PROMPTS: Record<DemoKey, PromptConfig> = {
 「あー、新人がよくやるミスな。製造業やったらな、まず段取り省略やな。"これくらいええやろ" で安全確認飛ばして、後で大事になる。建設業やと、報連相の遅れが命取りで、特に天候の急変は早めに親方に伝えなあかん。共通して言えるのは、"分からんことを分からんと言える" ってことやで。これが一番大事なんよ。」`,
     publicDescription:
       "ベテランの判断基準を AI に学習させたデモ。新人が現場で困ることを質問すると、先輩犬として答えます。",
-    model: "sonnet",
+    model: "haiku",
     maxTokens: 1024,
     temperature: 0.7,
   },

@@ -5,12 +5,13 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX, Upload, FileText, X } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { DemoHeader } from "@/components/DemoLayout";
 import { cn } from "@/lib/utils";
+import { getCachedTts, setCachedTts } from "@/lib/tts-cache";
 
 interface Message {
   role: "user" | "assistant";
@@ -60,7 +61,86 @@ export default function SenpaiWankoPage() {
   const [voiceOn, setVoiceOn] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceLoading, setVoiceLoading] = useState(false);
+  const [cachedHit, setCachedHit] = useState(false);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // RAG: 会社固有ナレッジ
+  const [knowledgeText, setKnowledgeText] = useState("");
+  const [knowledgeFiles, setKnowledgeFiles] = useState<Array<{ name: string; chars: number }>>([]);
+  const [isParsingKnowledge, setIsParsingKnowledge] = useState(false);
+  const knowledgeInputRef = useRef<HTMLInputElement>(null);
+
+  // LocalStorage から復元
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("blan-senpai-knowledge");
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.text) setKnowledgeText(data.text);
+        if (data.files) setKnowledgeFiles(data.files);
+      }
+    } catch {}
+  }, []);
+
+  const saveKnowledge = (text: string, files: Array<{ name: string; chars: number }>) => {
+    try {
+      localStorage.setItem("blan-senpai-knowledge", JSON.stringify({ text, files }));
+    } catch {}
+  };
+
+  const handleKnowledgeFile = async (file: File) => {
+    setIsParsingKnowledge(true);
+    try {
+      const lower = file.name.toLowerCase();
+      let text = "";
+      if (lower.endsWith(".pdf")) {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/parse-pdf", { method: "POST", body: fd });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || "PDF 解析失敗");
+        text = json.text || "";
+      } else if (lower.endsWith(".txt") || lower.endsWith(".md") || file.type === "text/plain") {
+        text = await file.text();
+      } else {
+        throw new Error("対応形式: .pdf / .txt / .md");
+      }
+      const trimmed = text.trim();
+      if (!trimmed) throw new Error("テキスト抽出 0 字");
+      // 既存の knowledge に追記
+      const newText = knowledgeText
+        ? `${knowledgeText}\n\n--- ${file.name} ---\n${trimmed}`
+        : `--- ${file.name} ---\n${trimmed}`;
+      const newFiles = [...knowledgeFiles, { name: file.name, chars: trimmed.length }];
+      setKnowledgeText(newText);
+      setKnowledgeFiles(newFiles);
+      saveKnowledge(newText, newFiles);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : String(err));
+    } finally {
+      setIsParsingKnowledge(false);
+    }
+  };
+
+  const removeKnowledgeFile = (idx: number) => {
+    // テキストを再構築 (この実装は単純に全削除 + 再追加が必要だが、最小実装で全 reset)
+    // 代わりに UI 上だけクリアする選択肢を提供
+    if (idx === -1) {
+      setKnowledgeText("");
+      setKnowledgeFiles([]);
+      saveKnowledge("", []);
+    } else {
+      const newFiles = knowledgeFiles.filter((_, i) => i !== idx);
+      // 個別削除は元テキスト塊から該当ファイルブロックを除去
+      const targetName = knowledgeFiles[idx].name;
+      const blocks = knowledgeText.split(/\n\n(?=--- )/);
+      const filtered = blocks.filter((b) => !b.startsWith(`--- ${targetName} ---`));
+      const newText = filtered.join("\n\n");
+      setKnowledgeText(newText);
+      setKnowledgeFiles(newFiles);
+      saveKnowledge(newText, newFiles);
+    }
+  };
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceMapRef = useRef<WeakMap<HTMLAudioElement, MediaElementAudioSourceNode>>(new WeakMap());
@@ -147,17 +227,26 @@ export default function SenpaiWankoPage() {
     if (!clean) return;
     stopSpeaking();
     setVoiceLoading(true);
+    setCachedHit(false);
     try {
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: clean, refId: FISH_REF_ID, model: FISH_MODEL }),
-      });
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => ({}));
-        throw new Error(errBody.error || `TTS API ${res.status}`);
+      // IndexedDB キャッシュヒット確認 → 50ms 程度で取得
+      let blob = await getCachedTts(FISH_REF_ID, clean);
+      if (blob) {
+        setCachedHit(true);
+      } else {
+        const res = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: clean, refId: FISH_REF_ID, model: FISH_MODEL }),
+        });
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => ({}));
+          throw new Error(errBody.error || `TTS API ${res.status}`);
+        }
+        blob = await res.blob();
+        // キャッシュに保存 (非同期、エラー無視)
+        void setCachedTts(FISH_REF_ID, clean, blob);
       }
-      const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
       currentAudioRef.current = audio;
@@ -202,7 +291,11 @@ export default function SenpaiWankoPage() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ demoKey: "senpai-wanko", messages: newMessages }),
+        body: JSON.stringify({
+          demoKey: "senpai-wanko",
+          messages: newMessages,
+          knowledgeContext: knowledgeText || undefined,
+        }),
       });
       if (!res.ok || !res.body) {
         const errBody = await res.text().catch(() => "");
@@ -373,7 +466,7 @@ export default function SenpaiWankoPage() {
                   >
                     {voiceOn ? <Volume2 size={14} className={isSpeaking || voiceLoading ? "animate-pulse" : ""} /> : <VolumeX size={14} />}
                     <span className="hidden xl:inline">
-                      {voiceLoading ? "生成中" : voiceOn ? "声 ON" : "声 OFF"}
+                      {voiceLoading ? "生成中" : cachedHit && isSpeaking ? "声 ⚡cache" : voiceOn ? "声 ON" : "声 OFF"}
                     </span>
                   </button>
                   <Button variant="ghost" size="sm" onClick={handleReset} disabled={isStreaming}>
@@ -449,12 +542,68 @@ export default function SenpaiWankoPage() {
           </div>
           </div>
 
-          {/* 2カラム目: サンプル質問 + 先輩犬の特徴 */}
-          <div className="flex h-full flex-col gap-4 overflow-y-auto min-h-0">
+          {/* 2カラム目: 会社ナレッジ + サンプル質問 + 特徴 */}
+          <div className="flex h-full flex-col gap-3 overflow-y-auto min-h-0">
+            {/* 会社固有ナレッジ (RAG: 質問時に context として AI に渡される) */}
+            <Card variant="raised" padding="md" className="flex-shrink-0 border-2 border-amber-200">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-display text-sm">📚 会社の知識を追加</h3>
+                {knowledgeFiles.length > 0 && (
+                  <Badge tone="success" size="sm">{knowledgeFiles.length} 件</Badge>
+                )}
+              </div>
+              <p className="mb-2 text-[11px] leading-relaxed text-stone-700">
+                自社のマニュアル / 業務手順書 / 過去事例の <span className="font-bold">PDF / .txt</span> を upload → 質問時にこの内容を参照して答える
+              </p>
+              <input
+                ref={knowledgeInputRef}
+                type="file"
+                accept=".pdf,.txt,.md,application/pdf,text/plain"
+                className="hidden"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  if (f) await handleKnowledgeFile(f);
+                  e.target.value = "";
+                }}
+              />
+              <button
+                onClick={() => knowledgeInputRef.current?.click()}
+                disabled={isParsingKnowledge || isStreaming}
+                className="w-full h-9 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold inline-flex items-center justify-center gap-1.5 disabled:opacity-50"
+              >
+                <Upload size={12} />
+                {isParsingKnowledge ? "解析中..." : "資料を追加"}
+              </button>
+              {knowledgeFiles.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {knowledgeFiles.map((f, i) => (
+                    <div key={i} className="flex items-center gap-1.5 text-[10px] bg-stone-50 rounded px-2 py-1">
+                      <FileText size={10} className="text-stone-500 flex-shrink-0" />
+                      <span className="truncate flex-1 font-medium text-stone-800">{f.name}</span>
+                      <span className="text-stone-500">{f.chars}字</span>
+                      <button onClick={() => removeKnowledgeFile(i)} className="text-stone-400 hover:text-red-600 flex-shrink-0">
+                        <X size={10} />
+                      </button>
+                    </div>
+                  ))}
+                  <button onClick={() => removeKnowledgeFile(-1)} className="text-[10px] text-stone-500 hover:text-red-600 underline">
+                    全部クリア
+                  </button>
+                </div>
+              )}
+              {knowledgeFiles.length > 0 && (
+                <p className="mt-2 text-[10px] leading-relaxed text-emerald-700 font-bold">
+                  ✓ 次の質問はこの資料を参照して回答します
+                </p>
+              )}
+            </Card>
+
             <Card variant="raised" padding="md" className="flex-shrink-0">
               <h3 className="mb-2 font-display text-base">こんな質問はどう?</h3>
-              <p className="mb-3 text-xs leading-relaxed text-stone-600">
-                先輩犬に聞いてみたい質問のサンプル。タップで即送信。
+              <p className="mb-3 text-xs leading-relaxed text-stone-800">
+                {knowledgeFiles.length > 0
+                  ? `アップロードした資料 (${knowledgeFiles.length} 件) も踏まえて答えます。`
+                  : "先輩犬に聞いてみたい質問のサンプル。タップで即送信。"}
               </p>
               <div className="space-y-2">
                 {SUGGESTED_QUESTIONS.map((q) => (

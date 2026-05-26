@@ -14,6 +14,8 @@ interface ChatRequestBody {
   messages: Array<{ role: "user" | "assistant"; content: string }>;
   // 管理画面からのライブ補正 (将来) で追加システムプロンプト
   systemPromptOverride?: string;
+  // RAG コンテキスト (ユーザーが upload した会社固有情報の抽出済テキスト)
+  knowledgeContext?: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -27,7 +29,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { demoKey, messages, systemPromptOverride } = body;
+  const { demoKey, messages, systemPromptOverride, knowledgeContext } = body;
 
   const config = DEMO_PROMPTS[demoKey];
   if (!config) {
@@ -37,10 +39,16 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // システムプロンプト構築 (ライブ補正があれば追記)
-  const systemPrompt = systemPromptOverride
-    ? `${config.systemPrompt}\n\n# 追加指示 (ライブ補正)\n${systemPromptOverride}`
-    : config.systemPrompt;
+  // システムプロンプト構築 (ライブ補正 + RAG コンテキストを追記)
+  let systemPrompt = config.systemPrompt;
+  if (knowledgeContext && knowledgeContext.trim()) {
+    // 会社固有のナレッジを system に prepend (200K context のうち最大 ~50K 字を限度に切詰め)
+    const truncated = knowledgeContext.slice(0, 50000);
+    systemPrompt = `${config.systemPrompt}\n\n# 参照すべき会社固有ナレッジ (ユーザーが事前 upload した資料抽出テキスト)\n以下を最優先で参照し、内容に基づいて回答してください。記載がない場合は「アップロード資料には記載がないが、一般論として...」と前置きしてから一般知識で答えること。\n\n--- ナレッジ開始 ---\n${truncated}\n--- ナレッジ終了 ---`;
+  }
+  if (systemPromptOverride) {
+    systemPrompt = `${systemPrompt}\n\n# 追加指示 (ライブ補正)\n${systemPromptOverride}`;
+  }
 
   // モデル選定
   const model = MODELS[config.model];
