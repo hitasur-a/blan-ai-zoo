@@ -70,17 +70,9 @@ export default function SenpaiWankoPage() {
   const [isParsingKnowledge, setIsParsingKnowledge] = useState(false);
   const knowledgeInputRef = useRef<HTMLInputElement>(null);
 
-  // LocalStorage から復元
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("blan-senpai-knowledge");
-      if (saved) {
-        const data = JSON.parse(saved);
-        if (data.text) setKnowledgeText(data.text);
-        if (data.files) setKnowledgeFiles(data.files);
-      }
-    } catch {}
-  }, []);
+  // booth 用途: 来場者ごとに毎回まっさらで起動するため、localStorage 自動復元は無効化。
+  // 来場者 A の upload した社員名簿等が来場者 B にロードされる privacy 漏洩を防ぐ。
+  // saveKnowledge() は残置 (誤リロード時の保険として localStorage に書き続ける、起動時に load しないだけ)。
 
   const saveKnowledge = (text: string, files: Array<{ name: string; chars: number }>) => {
     try {
