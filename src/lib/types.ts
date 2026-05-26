@@ -41,9 +41,9 @@ export type DemoKey =
 export const ANIMAL_TO_DEMOS: Record<AnimalKey, DemoKey[]> = {
   lion: ["senpai-wanko", "skill-growth"],
   owl: ["contract-risk", "explanation-risk"],
-  cow: ["shipping-flow"],
+  cow: ["shipping-flow", "skill-growth"],
   mammoth: ["public-diff", "hojolog"],
-  rabbit: ["property-copy"],
+  rabbit: ["property-copy", "hojolog"],
 };
 
 // 設問の選択肢
