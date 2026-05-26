@@ -345,9 +345,9 @@ export default function PropertyCopyPage() {
               </ul>
             </Card>
             <Card variant="flat" padding="md" className="bg-white/60 backdrop-blur-sm flex-shrink-0">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-1">このデモの仕組み</div>
-              <p className="text-[10px] leading-relaxed text-stone-700">{demo.description}</p>
-              <p className="mt-2 text-[10px] leading-relaxed text-stone-500">※ 宅建業法 32 条 + 公正競争規約 に基づき NG 表現を自動排除。</p>
+              <div className="text-[11px] font-bold uppercase tracking-widest text-stone-700 mb-1">このデモの仕組み</div>
+              <p className="text-[11px] leading-relaxed text-stone-800">{demo.description}</p>
+              <p className="mt-2 text-[11px] leading-relaxed text-stone-700">※ 宅建業法 32 条 + 公正競争規約 に基づき NG 表現を自動排除。</p>
             </Card>
           </div>
         </section>
