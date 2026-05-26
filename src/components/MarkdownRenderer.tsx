@@ -25,7 +25,7 @@ export function MarkdownRenderer({ children, className }: MarkdownRendererProps)
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="font-display text-lg text-[#fb6103] mt-4 mb-2">
+            <h2 className="font-bold text-lg text-[#fb6103] mt-4 mb-2">
               {children}
             </h2>
           ),
@@ -55,9 +55,24 @@ export function MarkdownRenderer({ children, className }: MarkdownRendererProps)
           li: ({ children }) => (
             <li className="leading-relaxed">{children}</li>
           ),
-          strong: ({ children }) => (
-            <strong className="font-bold text-[#fb6103]">{children}</strong>
-          ),
+          strong: ({ children }) => {
+            // 【高】【中】【低】の優先度ラベルは色分け chip 化してメリハリを出す
+            const text = Array.isArray(children)
+              ? children.filter((c) => typeof c === "string").join("")
+              : typeof children === "string"
+              ? children
+              : "";
+            if (text.startsWith("【高】")) {
+              return <strong className="inline-block rounded bg-red-100 text-red-800 font-bold px-1.5 py-0.5">{children}</strong>;
+            }
+            if (text.startsWith("【中】")) {
+              return <strong className="inline-block rounded bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5">{children}</strong>;
+            }
+            if (text.startsWith("【低】")) {
+              return <strong className="inline-block rounded bg-stone-100 text-stone-700 font-bold px-1.5 py-0.5">{children}</strong>;
+            }
+            return <strong className="font-bold text-[#fb6103]">{children}</strong>;
+          },
           em: ({ children }) => (
             <em className="italic text-stone-700">{children}</em>
           ),

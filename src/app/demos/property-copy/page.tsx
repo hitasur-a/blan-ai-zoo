@@ -302,7 +302,7 @@ export default function PropertyCopyPage() {
                             {copiedIdx === i ? "✓ コピー済" : "コピー"}
                           </button>
                         </div>
-                        <div className="text-xs leading-relaxed text-stone-900 whitespace-pre-wrap">{cleanBody}</div>
+                        <div className="text-sm leading-relaxed text-stone-900 whitespace-pre-wrap">{cleanBody}</div>
                         {ngHits.length > 0 && (
                           <div className="mt-1.5 flex flex-wrap gap-1">
                             {ngHits.map((h, k) => (
@@ -337,9 +337,9 @@ export default function PropertyCopyPage() {
               <h3 className="mb-2 font-display text-sm">自動排除 NG 表現</h3>
               <ul className="space-y-1.5">
                 {NG_EXPRESSIONS.map((n, i) => (
-                  <li key={i} className="text-[11px] leading-relaxed">
+                  <li key={i} className="text-[11px] leading-relaxed border-l-2 border-red-300 pl-2">
                     <span className="font-bold text-stone-900">{n.word}</span>
-                    <span className="text-stone-700"> — {n.reason}</span>
+                    <span className="text-red-700"> — {n.reason}</span>
                   </li>
                 ))}
               </ul>
