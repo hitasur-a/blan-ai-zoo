@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+<meta name="googlebot" content="noindex,nofollow">
+<title>「人で消耗しない会社」をつくる ／ BLAN 馬場理菜子 — 第13回 解決市場</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700;800&family=Noto+Serif+JP:wght@200;300;400;500;600;700;800;900&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;-webkit-font-smoothing:antialiased}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DESIGN TOKENS (v12 確定)
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+:root{
+  --orange:#FB6103;
+  --orange-strong:#9B3D02;
+  --orange-mid:#C84F03;
+  --orange-soft:rgba(251,97,3,.10);
+  --konjo:#1B3A5C;
+  --sumi:#16110E;
+  --sumi-mid:#3B342D;
+  --sumi-faint:#7A6F62;
+  --kinari:#F6F1E8;
+  --kinari-deep:#EFE7D5;
+  --rule:rgba(22,17,14,.20);
+  --rule-soft:rgba(22,17,14,.08);
+}
+
+body{
+  font-family:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif;
+  color:var(--sumi);background:var(--kinari);
+  overflow:hidden;
+}
+.serif{font-family:'Shippori Mincho','Noto Serif JP','Hiragino Mincho ProN',serif}
+.mono{font-family:'Courier Prime','Courier New',monospace}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DECK ENGINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.deck{position:relative;width:100vw;height:100vh;overflow:hidden}
+.slide{
+  position:absolute;inset:0;
+  opacity:0;visibility:hidden;
+  transition:opacity 1s cubic-bezier(.22,.61,.36,1), filter 1s cubic-bezier(.22,.61,.36,1);
+  filter:blur(2px);
+}
+.slide.active{opacity:1;visibility:visible;filter:blur(0)}
+.slide.exit{opacity:0;filter:blur(2px)}
+
+/* nav UI */
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--orange);z-index:200;transition:width .8s cubic-bezier(.22,.61,.36,1)}
+.dots{position:fixed;right:24px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:9px;z-index:200}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--sumi-faint);cursor:pointer;border:none;padding:0;transition:all .35s;opacity:.45}
+.dot:hover{opacity:.8;transform:scale(1.3)}
+.dot.on{background:var(--orange);opacity:1;transform:scale(1.5)}
+.counter{position:fixed;bottom:18px;right:30px;font-family:'Courier Prime',monospace;font-size:11px;letter-spacing:.14em;color:var(--sumi-faint);z-index:200}
+.hint{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;font-size:11px;color:var(--sumi-faint);letter-spacing:.06em;z-index:200;opacity:.5}
+.hkey{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border:1px solid var(--rule-soft);border-radius:3px;font-size:9px;color:var(--sumi-mid)}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   COMMON PAGE (shared by all slides)
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.page{
+  position:relative;
+  width:100vw;height:100vh;
+  padding:3vh 5.5vw;
+  display:grid;grid-template-rows:auto 1fr auto;
+  gap:clamp(16px,2.4vh,32px);
+  overflow:hidden;
+  background:linear-gradient(180deg, rgba(22,17,14,.012) 0%, transparent 14%), var(--kinari);
+}
+.page::before{
+  content:'';position:absolute;inset:0;
+  background-image:repeating-linear-gradient(0deg, transparent 0, transparent 24px, rgba(22,17,14,.004) 24px, rgba(22,17,14,.004) 25px);
+  pointer-events:none;opacity:.7;
+}
+
+/* ━━━━━ Masthead (shared) ━━━━━ */
+.masthead{
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;
+  gap:clamp(12px,2vw,28px);
+  padding-bottom:clamp(11px,1.4vh,18px);
+  border-bottom:1px solid var(--sumi);position:relative;
+}
+.masthead::after{
+  content:'';position:absolute;left:0;right:0;bottom:-9px;
+  height:4px;background:var(--orange);
+}
+.brand{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(16px,1.6vw,22px);font-weight:800;
+  letter-spacing:.34em;color:var(--sumi);
+}
+.brand::before{content:'━ ';color:var(--orange);font-weight:400;letter-spacing:0}
+.masthead-meta{
+  font-family:'Courier Prime',monospace;
+  font-size:clamp(11px,1.05vw,14px);letter-spacing:.18em;
+  color:var(--sumi-mid);
+  display:flex;align-items:center;gap:14px;justify-content:center;
+}
+.masthead-meta .sep{color:var(--orange);font-size:.85em}
+.masthead-edition{
+  font-family:'Courier Prime',monospace;
+  font-size:clamp(11px,1.05vw,14px);letter-spacing:.2em;
+  color:var(--sumi-faint);text-align:right;
+}
+
+/* ━━━━━ Footer (shared) ━━━━━ */
+.footer{
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+  gap:clamp(20px,3vw,40px);
+  padding-top:clamp(14px,1.8vh,22px);
+  border-top:1px solid var(--sumi);position:relative;
+}
+.footer::before{
+  content:'';position:absolute;left:0;right:0;top:-9px;
+  height:4px;background:var(--orange);
+}
+.foot-when{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(14px,1.4vw,19px);font-weight:600;
+  color:var(--sumi);letter-spacing:.06em;
+}
+.foot-when .time{
+  font-family:'Courier Prime',monospace;font-weight:700;
+  color:var(--orange-strong);letter-spacing:.1em;margin-right:10px;
+}
+.foot-where{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(13px,1.25vw,17px);
+  color:var(--sumi-faint);letter-spacing:.06em;text-align:center;
+}
+.foot-byline{text-align:right}
+.foot-byline-label{
+  font-family:'Courier Prime',monospace;
+  font-size:clamp(11px,1vw,14px);letter-spacing:.28em;
+  color:var(--sumi-faint);font-weight:700;margin-bottom:4px;
+}
+.foot-byline-name{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(16px,1.7vw,22px);font-weight:700;
+  color:var(--sumi);letter-spacing:.08em;
+}
+.foot-byline-name .org{color:var(--konjo);margin-right:.4em}
+
+/* ━━━━━ body grid (shared, both columns stretch to fill) ━━━━━ */
+/* v2: padding-top/bottom 縮小 (48→32) — はみ出し対策 */
+.body{
+  display:grid;
+  gap:clamp(28px,4vw,56px);
+  align-items:stretch;
+  padding-top:clamp(16px,2.4vh,32px);
+  padding-bottom:clamp(16px,2.4vh,32px);
+  min-height:0;
+}
+
+/* section label (shared, for sub-sections in slides) */
+.sec-label{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:clamp(16px,2vh,28px);
+}
+.sec-label-num{
+  font-family:'Courier Prime',monospace;
+  font-size:clamp(11px,1vw,14px);font-weight:700;
+  letter-spacing:.18em;color:var(--orange-strong);
+  background:var(--orange-soft);padding:4px 10px;
+}
+.sec-label-tag{
+  font-family:'Courier Prime',monospace;
+  font-size:clamp(11px,1vw,14px);letter-spacing:.28em;
+  color:var(--sumi-mid);font-weight:700;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TEMPLATE 1: Cover (S1, S15)
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.tmpl-cover .body{grid-template-columns:1.55fr 1fr}
+.tmpl-cover .col-left{display:flex;flex-direction:column;justify-content:center;gap:clamp(28px,3.6vh,48px)}
+.tmpl-cover .col-right{display:flex;flex-direction:column}
+.tmpl-cover .contents{flex:1;display:flex;flex-direction:column;justify-content:space-evenly}
+
+.cover-headline{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(42px,6vw,98px);font-weight:700;
+  line-height:1.18;letter-spacing:.005em;
+  color:var(--sumi);word-break:keep-all;
+}
+.cover-headline .line-main{display:block;text-align:left}
+.cover-headline .line-tail{display:block;text-align:left;text-indent:1em}
+.cover-headline .key{position:relative;display:inline;z-index:1;font-weight:800;color:var(--sumi)}
+.cover-headline .key::after{
+  content:'';position:absolute;left:0;right:0;bottom:.12em;
+  height:.22em;background:var(--orange);opacity:.85;z-index:-1;border-radius:1px;
+}
+.cover-headline .punc{color:var(--sumi-mid);font-weight:400}
+
+.cover-lead{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(17px,1.7vw,25px);font-weight:400;line-height:1.9;
+  color:var(--sumi-mid);letter-spacing:.04em;
+  border-left:4px solid var(--orange);
+  padding-left:clamp(16px,1.6vw,24px);max-width:32em;
+}
+.cover-lead .em{color:var(--sumi);font-weight:700}
+
+.cover-contents-title{
+  font-family:'Courier Prime',monospace;
+  font-size:clamp(13px,1.2vw,17px);letter-spacing:.28em;
+  color:var(--sumi-mid);font-weight:700;
+}
+.cover-contents-title::before{content:'▍';color:var(--orange);margin-right:8px;letter-spacing:0}
+.cover-toc-item{
+  display:grid;grid-template-columns:auto 1fr;gap:clamp(14px,1.6vw,22px);
+  padding:0;border-bottom:1px solid var(--rule-soft);
+  padding-bottom:clamp(10px,1.4vh,18px);
+}
+.cover-toc-item:last-child{border-bottom:none;padding-bottom:0}
+.cover-toc-num{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(32px,3.8vw,54px);font-weight:700;
+  color:var(--orange-mid);line-height:.85;
+  letter-spacing:-.02em;font-feature-settings:"tnum";
+}
+.cover-toc-text{display:flex;flex-direction:column;gap:5px;padding-top:clamp(4px,.6vh,8px)}
+.cover-toc-headline{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(17px,1.7vw,24px);font-weight:700;
+  color:var(--sumi);letter-spacing:.04em;line-height:1.4;word-break:keep-all;
+}
+.cover-toc-sub{
+  font-family:'Zen Kaku Gothic New',sans-serif;
+  font-size:clamp(13px,1.25vw,16px);font-weight:400;
+  color:var(--sumi-faint);letter-spacing:.02em;line-height:1.5;word-break:keep-all;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TEMPLATE 2: Agenda Timetable (S2)
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.tmpl-agenda .body{grid-template-columns:1fr;display:flex;flex-direction:column;justify-content:center}
+.tmpl-agenda .agenda-wrap{max-width:1100px;width:100%;margin:0 auto}
+
+/* v3: agenda 全体をコンパクト化 — 最終行が footer にかぶる件対策 */
+.agenda-head{
+  margin-bottom:clamp(14px,2vh,28px);
+}
+.agenda-h{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(28px,4vw,60px);font-weight:700;
+  line-height:1.22;letter-spacing:.005em;color:var(--sumi);
+  margin-bottom:clamp(8px,1.2vh,16px);word-break:keep-all;
+}
+.agenda-h .min{color:var(--orange-strong);font-weight:800}
+.agenda-sub{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(13px,1.4vw,19px);color:var(--sumi-mid);
+  line-height:1.75;letter-spacing:.04em;max-width:46em;
+}
+
+.tt-row{
+  display:grid;grid-template-columns:130px 1fr;gap:clamp(18px,2.6vw,38px);
+  padding:clamp(8px,1.3vh,16px) 0;border-bottom:1px solid var(--rule-soft);
+  align-items:baseline;
+}
+.tt-row:first-of-type{border-top:1px solid var(--sumi)}
+.tt-row.tt-main{background:rgba(251,97,3,.04)}
+.tt-time{
+  font-family:'Courier Prime',monospace;font-weight:700;
+  font-size:clamp(13px,1.4vw,19px);letter-spacing:.08em;
+  color:var(--orange-strong);text-align:right;
+}
+.tt-main .tt-time{color:var(--orange);font-size:clamp(15px,1.55vw,21px)}
+.tt-content{display:flex;flex-direction:column;gap:4px}
+.tt-h{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(16px,1.7vw,24px);font-weight:700;
+  color:var(--sumi);letter-spacing:.04em;line-height:1.4;
+}
+.tt-main .tt-h{font-weight:800}
+.tt-d{
+  font-family:'Zen Kaku Gothic New',sans-serif;
+  font-size:clamp(12px,1.2vw,15px);color:var(--sumi-mid);
+  letter-spacing:.02em;line-height:1.65;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TEMPLATE 3: Profile (S3)
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.tmpl-profile .body{grid-template-columns:1fr;display:flex;flex-direction:column;justify-content:center}
+.tmpl-profile .profile-wrap{max-width:1080px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:clamp(20px,2.8vh,40px)}
+.profile-greet{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(20px,2.4vw,38px);font-weight:600;
+  color:var(--sumi);line-height:1.55;letter-spacing:.04em;
+}
+.profile-greet .nm{color:var(--orange-strong);font-weight:800}
+
+.profile-card{
+  display:grid;grid-template-columns:auto 1fr;gap:clamp(24px,3vw,48px);
+  align-items:center;border-top:1px solid var(--sumi);
+  padding-top:clamp(20px,2.6vh,36px);
+  position:relative;
+}
+.profile-portrait{
+  width:clamp(110px,12vw,180px);height:clamp(110px,12vw,180px);
+  border-radius:50%;
+  background:linear-gradient(135deg, var(--orange) 0%, var(--orange-strong) 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(48px,5.5vw,84px);font-weight:800;color:#fff;
+  letter-spacing:.06em;
+  box-shadow:0 8px 32px rgba(155,61,2,.22);
+}
+.profile-meta{display:flex;flex-direction:column;gap:8px}
+.profile-label{
+  font-family:'Courier Prime',monospace;
+  font-size:clamp(11px,1.05vw,14px);letter-spacing:.28em;
+  color:var(--orange-strong);font-weight:700;
+}
+.profile-name{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(28px,3.4vw,54px);font-weight:700;
+  color:var(--sumi);letter-spacing:.06em;line-height:1.2;
+}
+.profile-name-en{
+  font-family:'Courier Prime',monospace;
+  font-size:clamp(13px,1.2vw,17px);letter-spacing:.1em;
+  color:var(--sumi-faint);
+}
+.profile-name-en .role{color:var(--konjo);font-weight:700}
+.profile-bio{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(15px,1.5vw,21px);font-weight:400;line-height:1.95;
+  color:var(--sumi-mid);letter-spacing:.04em;
+}
+.profile-bio strong{color:var(--sumi);font-weight:700}
+.profile-quote{
+  font-family:'Shippori Mincho',serif;font-style:italic;
+  font-size:clamp(14px,1.4vw,19px);color:var(--sumi-mid);
+  line-height:1.85;letter-spacing:.04em;
+  padding-left:clamp(16px,1.6vw,24px);border-left:3px solid var(--orange);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TEMPLATE 4: Compare 2-col (S4, S6)
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.tmpl-compare .body{grid-template-columns:1fr;display:flex;flex-direction:column;justify-content:center}
+.tmpl-compare .compare-wrap{max-width:1200px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:clamp(20px,2.8vh,40px)}
+.compare-head .h{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(28px,3.6vw,54px);font-weight:700;
+  line-height:1.3;letter-spacing:.005em;color:var(--sumi);
+  margin-bottom:clamp(10px,1.4vh,18px);word-break:keep-all;
+}
+.compare-head .h .em{color:var(--orange-strong);font-weight:800}
+.compare-head .sub{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(15px,1.5vw,21px);color:var(--sumi-mid);
+  line-height:1.85;letter-spacing:.04em;max-width:46em;
+}
+
+.compare-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:clamp(20px,2.4vw,36px);
+}
+.compare-card{
+  border-top:3px solid var(--sumi-faint);
+  padding-top:clamp(18px,2.4vh,30px);
+  display:flex;flex-direction:column;gap:clamp(10px,1.4vh,18px);
+}
+.compare-card.before{border-top-color:var(--sumi-faint)}
+.compare-card.after{border-top-color:var(--orange)}
+.compare-label{
+  font-family:'Courier Prime',monospace;
+  font-size:clamp(11px,1.05vw,14px);letter-spacing:.24em;font-weight:700;
+}
+.compare-card.before .compare-label{color:var(--sumi-faint)}
+.compare-card.after .compare-label{color:var(--orange-strong)}
+.compare-h{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(19px,2vw,30px);font-weight:700;color:var(--sumi);
+  letter-spacing:.04em;line-height:1.5;word-break:keep-all;
+}
+.compare-body{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(14px,1.4vw,19px);color:var(--sumi-mid);
+  line-height:1.9;letter-spacing:.04em;
+}
+.compare-body strong{color:var(--sumi);font-weight:700}
+.compare-body em{color:var(--orange-strong);font-style:normal;font-weight:600}
+
+.stat-row{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,2vw,32px);
+  padding:clamp(16px,2vh,28px) clamp(20px,2.4vw,36px);
+  background:rgba(251,97,3,.04);border:1px dashed var(--orange);
+}
+.stat-item{display:flex;flex-direction:column;gap:6px;text-align:center}
+.stat-num{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(22px,2.6vw,42px);font-weight:800;
+  color:var(--orange-strong);line-height:1;letter-spacing:-.01em;
+}
+.stat-label{
+  font-family:'Courier Prime',monospace;
+  font-size:clamp(10px,.95vw,12px);letter-spacing:.16em;
+  color:var(--sumi-faint);font-weight:700;
+}
+.stat-desc{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(12px,1.15vw,15px);color:var(--sumi-mid);letter-spacing:.04em;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TEMPLATE 5: Manifesto (S5, S12)
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.tmpl-manifesto .body{grid-template-columns:1fr;display:flex;flex-direction:column;justify-content:center}
+.tmpl-manifesto .manifesto-wrap{max-width:1100px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:clamp(16px,2.2vh,32px)}
+/* v2: fontサイズ全体的に縮小、特に .vow を大きく抑制 (はみ出し対策) */
+.manifesto-pre{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(15px,1.7vw,23px);color:var(--sumi-mid);
+  line-height:1.7;letter-spacing:.05em;max-width:44em;
+}
+.manifesto-quote{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(22px,2.8vw,42px);font-weight:700;
+  line-height:1.5;letter-spacing:.02em;color:var(--sumi);
+  border-left:5px solid var(--orange);
+  padding-left:clamp(18px,2.2vw,36px);word-break:keep-all;
+}
+.manifesto-quote .em{color:var(--orange-strong)}
+.manifesto-quote .vow{
+  display:block;font-size:.55em;font-weight:500;
+  margin-top:clamp(10px,1.4vh,18px);color:var(--sumi-mid);
+  line-height:1.85;letter-spacing:.04em;
+}
+.manifesto-attribution{
+  font-family:'Shippori Mincho',serif;font-style:italic;
+  font-size:clamp(13px,1.4vw,19px);color:var(--sumi-mid);
+  line-height:1.85;letter-spacing:.04em;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TEMPLATE 6: Grid3 (S7, S8)
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.tmpl-grid3 .body{grid-template-columns:1fr;display:flex;flex-direction:column;justify-content:center}
+.tmpl-grid3 .grid-wrap{max-width:1280px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:clamp(16px,2.2vh,32px)}
+/* v2: グリッド3 各要素縮小 — はみ出し対策 */
+.grid-head .h{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(24px,3vw,44px);font-weight:700;line-height:1.3;
+  letter-spacing:.005em;color:var(--sumi);margin-bottom:clamp(8px,1.2vh,16px);
+  word-break:keep-all;
+}
+.grid-head .h .em{color:var(--orange-strong);font-weight:800}
+.grid-head .sub{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(13px,1.4vw,19px);color:var(--sumi-mid);
+  line-height:1.75;letter-spacing:.04em;max-width:46em;
+}
+
+.grid-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,2vw,28px)}
+.grid-card{
+  border-top:3px solid var(--orange);padding-top:clamp(12px,1.6vh,20px);
+  display:flex;flex-direction:column;gap:clamp(8px,1.2vh,14px);
+}
+.grid-card .num{
+  font-family:'Shippori Mincho',serif;font-style:italic;
+  font-size:clamp(20px,2.4vw,34px);font-weight:800;
+  color:var(--orange-strong);line-height:.9;letter-spacing:-.02em;
+}
+.grid-card .h{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(16px,1.7vw,23px);font-weight:700;color:var(--sumi);
+  letter-spacing:.04em;line-height:1.4;word-break:keep-all;
+}
+.grid-card .voice{
+  font-family:'Shippori Mincho',serif;font-style:italic;
+  font-size:clamp(12px,1.2vw,15px);color:var(--orange-strong);
+  line-height:1.65;background:var(--orange-soft);
+  padding:clamp(6px,.9vh,10px) clamp(8px,1vw,14px);
+  border-radius:2px;
+}
+.grid-card .body-txt{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(12px,1.2vw,15px);color:var(--sumi-mid);
+  line-height:1.75;letter-spacing:.04em;
+}
+.grid-card .body-txt strong{color:var(--sumi);font-weight:700}
+.grid-card .demo-pin{
+  display:inline-block;
+  font-family:'Courier Prime',monospace;
+  font-size:clamp(10px,.9vw,12px);letter-spacing:.18em;font-weight:700;
+  background:var(--orange);color:#fff;padding:3px 10px;border-radius:2px;
+}
+.grid-tail{
+  font-family:'Shippori Mincho',serif;font-style:italic;
+  font-size:clamp(12px,1.25vw,16px);color:var(--sumi-mid);
+  line-height:1.75;letter-spacing:.04em;max-width:48em;
+  border-top:1px solid var(--rule-soft);padding-top:clamp(10px,1.4vh,18px);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TEMPLATE 7: Deep Dive (S9, S10, S11)
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.tmpl-deep .body{grid-template-columns:1fr;display:flex;flex-direction:column;justify-content:center}
+.tmpl-deep .deep-wrap{max-width:1280px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:clamp(20px,2.6vh,40px)}
+
+.deep-head{
+  display:grid;grid-template-columns:auto 1fr;gap:clamp(16px,2vw,32px);
+  align-items:start;padding-bottom:clamp(18px,2.4vh,30px);
+  border-bottom:1px solid var(--rule);
+}
+.deep-num{
+  font-family:'Shippori Mincho',serif;font-style:italic;
+  font-size:clamp(60px,7vw,128px);font-weight:800;
+  color:var(--orange-strong);line-height:.85;letter-spacing:-.02em;
+}
+.deep-meta{display:flex;flex-direction:column;gap:8px;padding-top:8px}
+.deep-tag{
+  font-family:'Courier Prime',monospace;
+  font-size:clamp(11px,1.05vw,14px);letter-spacing:.24em;font-weight:700;
+  color:var(--orange-strong);background:var(--orange-soft);
+  padding:3px 10px;display:inline-block;align-self:flex-start;
+}
+.deep-h{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(26px,3.2vw,46px);font-weight:700;
+  color:var(--sumi);letter-spacing:.04em;line-height:1.35;
+  word-break:keep-all;
+}
+.deep-h .em{color:var(--orange-strong);font-weight:800}
+.deep-sub{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(15px,1.5vw,21px);color:var(--sumi-mid);
+  line-height:1.85;letter-spacing:.04em;
+}
+.deep-sub strong{color:var(--sumi);font-weight:700}
+
+.deep-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,2.6vw,40px)}
+.deep-scene{
+  display:flex;flex-direction:column;gap:clamp(10px,1.4vh,16px);
+}
+.deep-scene-label{
+  font-family:'Courier Prime',monospace;
+  font-size:clamp(11px,1.05vw,14px);letter-spacing:.24em;
+  color:var(--sumi-faint);font-weight:700;
+}
+.deep-scene-h{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(19px,2vw,28px);font-weight:700;color:var(--sumi);
+  letter-spacing:.04em;line-height:1.5;word-break:keep-all;
+}
+.deep-scene-body{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(14px,1.4vw,19px);color:var(--sumi-mid);
+  line-height:1.9;letter-spacing:.04em;
+}
+.deep-scene-body strong{color:var(--sumi);font-weight:700}
+.deep-scene-body em{color:var(--orange-strong);font-style:normal;font-weight:600}
+
+.deep-footnote{
+  background:var(--orange-soft);border-left:4px solid var(--orange);
+  padding:clamp(14px,1.8vh,22px) clamp(18px,2vw,28px);
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(13px,1.3vw,17px);color:var(--sumi-mid);
+  line-height:1.85;letter-spacing:.04em;
+}
+.deep-footnote strong{color:var(--sumi);font-weight:700}
+.deep-footnote em{color:var(--orange-strong);font-style:normal;font-weight:600}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TEMPLATE 8: Points3 (S13, S14)
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.tmpl-points .body{grid-template-columns:1fr;display:flex;flex-direction:column;justify-content:center}
+.tmpl-points .points-wrap{max-width:1280px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:clamp(16px,2.2vh,32px)}
+/* v2: points 関係も縮小 — はみ出し対策 */
+.points-head .h{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(24px,3vw,44px);font-weight:700;line-height:1.3;
+  letter-spacing:.005em;color:var(--sumi);margin-bottom:clamp(8px,1.2vh,14px);
+  word-break:keep-all;
+}
+.points-head .h .em{color:var(--orange-strong);font-weight:800}
+.points-head .sub{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(13px,1.4vw,19px);color:var(--sumi-mid);
+  line-height:1.75;letter-spacing:.04em;max-width:46em;
+}
+
+.points-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,2vw,28px)}
+.points-card{
+  display:flex;flex-direction:column;gap:clamp(8px,1.2vh,14px);
+  padding:clamp(12px,1.6vh,20px) 0 0;
+  border-top:2px solid var(--orange);
+}
+.points-num{
+  font-family:'Shippori Mincho',serif;font-style:italic;
+  font-size:clamp(20px,2.2vw,32px);font-weight:800;
+  color:var(--orange-strong);line-height:1;letter-spacing:-.02em;
+}
+.points-h{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(15px,1.6vw,21px);font-weight:700;color:var(--sumi);
+  letter-spacing:.04em;line-height:1.4;word-break:keep-all;
+}
+.points-body{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(12px,1.2vw,15px);color:var(--sumi-mid);
+  line-height:1.75;letter-spacing:.04em;
+}
+.points-body strong{color:var(--sumi);font-weight:700}
+.points-note{
+  margin-top:clamp(8px,1.2vh,14px);padding-top:clamp(8px,1.2vh,14px);
+  border-top:1px dashed var(--rule);
+  font-family:'Shippori Mincho',serif;font-style:italic;
+  font-size:clamp(11px,1.05vw,14px);color:var(--sumi-faint);
+  line-height:1.6;letter-spacing:.04em;
+}
+.points-tail{
+  font-family:'Shippori Mincho',serif;font-style:italic;
+  font-size:clamp(12px,1.25vw,16px);color:var(--sumi-mid);
+  line-height:1.75;letter-spacing:.04em;max-width:48em;
+  border-top:1px solid var(--rule-soft);padding-top:clamp(10px,1.4vh,18px);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   AI概論 (S13 special: Anthropic panel)
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.anthropic-panel{
+  display:flex;align-items:center;gap:clamp(16px,2vw,28px);
+  padding:clamp(14px,1.8vh,24px) clamp(20px,2.4vw,34px);
+  border:1px solid var(--sumi);background:#fff;
+  margin-bottom:clamp(12px,1.6vh,20px);
+  position:relative;
+}
+.anthropic-panel::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--orange);
+}
+.ap-mark{
+  font-family:'Shippori Mincho',serif;font-size:clamp(32px,3.8vw,56px);
+  color:var(--orange);line-height:1;font-weight:400;
+}
+.ap-text{display:flex;flex-direction:column;gap:4px}
+.ap-name{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(18px,2vw,28px);font-weight:700;color:var(--sumi);
+  letter-spacing:.1em;line-height:1.1;
+}
+.ap-desc{
+  font-family:'Shippori Mincho',serif;font-style:italic;
+  font-size:clamp(11px,1.15vw,15px);color:var(--sumi-mid);letter-spacing:.04em;
+}
+.ap-meta{display:flex;align-items:center;gap:10px;margin-top:6px}
+.ap-tag{
+  font-family:'Courier Prime',monospace;font-size:clamp(10px,.95vw,12px);
+  letter-spacing:.16em;color:var(--orange-strong);background:var(--orange-soft);
+  padding:2px 10px;font-weight:700;
+}
+.ap-loc{
+  font-family:'Courier Prime',monospace;font-size:clamp(10px,.95vw,12px);
+  letter-spacing:.1em;color:var(--sumi-faint);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CLOSING (S15)
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.tmpl-close .body{grid-template-columns:1fr;display:flex;flex-direction:column;justify-content:center}
+.close-wrap{
+  max-width:1080px;width:100%;margin:0 auto;
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+  gap:clamp(24px,3vh,44px);
+}
+.close-label{
+  font-family:'Courier Prime',monospace;
+  font-size:clamp(12px,1.15vw,15px);letter-spacing:.32em;font-weight:700;
+  color:var(--orange-strong);
+}
+.close-h{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(30px,3.8vw,60px);font-weight:700;line-height:1.55;
+  letter-spacing:.04em;color:var(--sumi);word-break:keep-all;
+}
+.close-h .em-pri{color:var(--sumi-faint);font-weight:600}
+.close-h .em-pos{color:var(--orange-strong);font-weight:800}
+.close-body{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(15px,1.5vw,21px);color:var(--sumi-mid);
+  line-height:1.95;letter-spacing:.04em;max-width:46em;
+}
+.close-body strong{color:var(--sumi);font-weight:700}
+.close-sig{
+  display:flex;align-items:center;gap:18px;margin-top:clamp(10px,1.4vh,20px);
+}
+.close-sig-line{width:48px;height:1px;background:var(--orange)}
+.close-sig-text{
+  font-family:'Shippori Mincho',serif;
+  font-size:clamp(17px,1.8vw,24px);color:var(--orange-strong);
+  font-weight:700;letter-spacing:.18em;
+}
+.close-contact{
+  font-family:'Courier Prime',monospace;
+  font-size:clamp(11px,1.05vw,14px);letter-spacing:.12em;
+  color:var(--sumi-faint);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MOBILE
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@media(max-width:900px){
+  html{scroll-snap-type:y mandatory;scroll-behavior:smooth;height:auto;overflow:auto}
+  body{overflow-x:hidden;overflow-y:auto;height:auto}
+  .deck{display:flex;flex-direction:column;height:auto;overflow:visible}
+  .slide,.slide.active,.slide.exit{
+    position:relative;min-height:100vh;
+    opacity:1!important;visibility:visible!important;filter:none!important;
+    transition:none;scroll-snap-align:start;scroll-snap-stop:always;
+  }
+  .progress,.dots,.counter,.hint{display:none}
+  .page{height:auto;min-height:100vh;padding:4vh 6vw}
+  .compare-grid,.grid-cards,.deep-grid,.points-grid{grid-template-columns:1fr!important;gap:18px!important}
+  .tt-row{grid-template-columns:90px 1fr;gap:16px}
+  .deep-head{grid-template-columns:1fr;gap:8px}
+  .deep-num{font-size:60px}
+  .profile-card{grid-template-columns:1fr;justify-items:center;text-align:center}
+  .anthropic-panel{flex-direction:column;text-align:center;gap:14px}
+  .ap-meta{justify-content:center}
+  .masthead{grid-template-columns:1fr;text-align:center;gap:6px}
+  .masthead-meta,.masthead-edition{justify-content:center;text-align:center}
+  .footer{grid-template-columns:1fr;text-align:left;gap:14px}
+  .foot-where,.foot-byline{text-align:left}
+  .tmpl-cover .body{grid-template-columns:1fr;gap:32px}
+}
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="dots" id="dots"></div>
+<div class="counter mono"><span id="cur">01</span> / <span id="tot">15</span></div>
+<div class="hint"><span class="hkey mono">←</span><span class="hkey mono">→</span><span>でスライド送り</span></div>
+
+<div class="deck" id="deck">
+
+<!-- ============================================================
+     SLIDE 01: COVER (Template 1: Cover)
+============================================================ -->
+<section class="slide active tmpl-cover" data-i="0">
+  <div class="page">
+
+    <header class="masthead">
+      <div class="brand">BLAN</div>
+      <div class="masthead-meta">
+        <span>第13回 解決市場</span><span class="sep">●</span>
+        <span>建設・不動産業界 生成AI実践活用講座</span>
+      </div>
+      <div class="masthead-edition">VOL.01 ／ 2026.05.28 THU</div>
+    </header>
+
+    <main class="body">
+      <div class="col-left">
+        <h1 class="cover-headline">
+          <span class="line-main">「<span class="key">人で消耗しない会社</span>」</span>
+          <span class="line-tail"><span class="punc">を、</span>つくる<span class="punc">。</span></span>
+        </h1>
+        <p class="cover-lead">
+          ─ <span class="em">建設業界・不動産業界</span>に今、必要な生成AIとは？<br>
+          採用・育成・技術継承の「人の問題」を、<span class="em">仕組み</span>で解く 50 分。
+        </p>
+      </div>
+      <aside class="col-right">
+        <div class="contents">
+          <div class="cover-contents-title">CONTENTS ／ 本日扱う 3 テーマ</div>
+          <div class="cover-toc-item">
+            <div class="cover-toc-num">01</div>
+            <div class="cover-toc-text">
+              <div class="cover-toc-headline">採用市場の可視化</div>
+              <div class="cover-toc-sub">募集に応募が来ない、を構造で解く</div>
+            </div>
+          </div>
+          <div class="cover-toc-item">
+            <div class="cover-toc-num">02</div>
+            <div class="cover-toc-text">
+              <div class="cover-toc-headline">技術継承の AI 化</div>
+              <div class="cover-toc-sub">「生きるマニュアル」で暗黙知を残す</div>
+            </div>
+          </div>
+          <div class="cover-toc-item">
+            <div class="cover-toc-num">03</div>
+            <div class="cover-toc-text">
+              <div class="cover-toc-headline">法改正キャッチアップ</div>
+              <div class="cover-toc-sub">毎日見る時間を、AI に肩代わりさせる</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="footer">
+      <div class="foot-when"><span class="time">15:30 − 16:20</span><span>全 50 分</span></div>
+      <div class="foot-where">天神 エルガーラホール 8F</div>
+      <div class="foot-byline">
+        <div class="foot-byline-label">▸ SPEAKER</div>
+        <div class="foot-byline-name"><span class="org">BLAN</span>代表　馬場 理菜子</div>
+      </div>
+    </footer>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 02: AGENDA (Template 2: Timetable)
+============================================================ -->
+<section class="slide tmpl-agenda" data-i="1">
+  <div class="page">
+
+    <header class="masthead">
+      <div class="brand">BLAN</div>
+      <div class="masthead-meta"><span>AGENDA</span><span class="sep">●</span><span>本日の流れ</span></div>
+      <div class="masthead-edition">No.02 ／ TIMETABLE</div>
+    </header>
+
+    <main class="body">
+      <div class="agenda-wrap">
+        <div class="agenda-head">
+          <div class="sec-label">
+            <span class="sec-label-num">No. 02</span>
+            <span class="sec-label-tag">AGENDA ／ 50min</span>
+          </div>
+          <h2 class="agenda-h">
+            本日の <span class="min">50 分</span> の流れ
+          </h2>
+          <p class="agenda-sub">
+            講義とデモを交互に挟みながら進めます。途中で気になることがあれば、後ほどブースで気軽にお声かけください。
+          </p>
+        </div>
+
+        <div class="tt-row">
+          <div class="tt-time">0 − 8</div>
+          <div class="tt-content">
+            <div class="tt-h">はじめに ／ 自己紹介</div>
+            <div class="tt-d">なぜ私が建設業界の話をするのか、農業法人での体験から。</div>
+          </div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">8 − 18</div>
+          <div class="tt-content">
+            <div class="tt-h">「人で消耗しない会社」とは ／ 業界の現実</div>
+            <div class="tt-d">採用・育成・技術継承の構造課題について、業種を横断して見えてきたこと。</div>
+          </div>
+        </div>
+        <div class="tt-row tt-main">
+          <div class="tt-time">18 − 38</div>
+          <div class="tt-content">
+            <div class="tt-h">3 つのテーマ ／ 生きるマニュアル デモ</div>
+            <div class="tt-d">採用市場の可視化・技術継承のAI化・法改正キャッチアップを、実技デモを交えてお見せします。</div>
+          </div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">38 − 45</div>
+          <div class="tt-content">
+            <div class="tt-h">経営者向け AI 概論</div>
+            <div class="tt-d">AI を "使う" だけでなく、AI が映し出す "標準" とその仕組みに触れます。</div>
+          </div>
+        </div>
+        <div class="tt-row">
+          <div class="tt-time">45 − 50</div>
+          <div class="tt-content">
+            <div class="tt-h">大切にしたい考え方 ／ クロージング</div>
+            <div class="tt-d">明日からの一歩について。質疑応答はブースにて承ります。</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="foot-when"><span class="time">15:30 − 16:20</span><span>全 50 分</span></div>
+      <div class="foot-where">天神 エルガーラホール 8F</div>
+      <div class="foot-byline">
+        <div class="foot-byline-label">▸ SPEAKER</div>
+        <div class="foot-byline-name"><span class="org">BLAN</span>代表　馬場 理菜子</div>
+      </div>
+    </footer>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 03: SELF INTRO (Template 3: Profile)
+============================================================ -->
+<section class="slide tmpl-profile" data-i="2">
+  <div class="page">
+
+    <header class="masthead">
+      <div class="brand">BLAN</div>
+      <div class="masthead-meta"><span>SPEAKER</span><span class="sep">●</span><span>本日の登壇者</span></div>
+      <div class="masthead-edition">No.03 ／ PROFILE</div>
+    </header>
+
+    <main class="body">
+      <div class="profile-wrap">
+        <div class="sec-label">
+          <span class="sec-label-num">No. 03</span>
+          <span class="sec-label-tag">SPEAKER ／ ご挨拶</span>
+        </div>
+        <p class="profile-greet">
+          皆さま、はじめまして。<br>
+          本日お話しさせていただきます、<span class="nm">馬場 理菜子</span>と申します。
+        </p>
+
+        <div class="profile-card">
+          <div class="profile-portrait">馬</div>
+          <div class="profile-meta">
+            <div class="profile-label">— BLAN 代表</div>
+            <div class="profile-name">馬場 理菜子</div>
+            <div class="profile-name-en">Rinako Baba ／ <span class="role">現場DX × 事業開発プランナー</span></div>
+          </div>
+        </div>
+
+        <div class="profile-bio">
+          福岡県久留米市出身。<strong>教育学部卒・教員免許取得</strong>後、行政機関を経て農業法人へ。バックオフィス全般を担当しながら、<strong>現場の人手不足とどう向き合うか</strong>を考えるなかで AI 活用を始めました。<br>
+          2025 年 1 月に BLAN を立ち上げ、現在は <strong>製造・医療・農業・食品・建設</strong>など業種を横断して、中小企業の AI 活用と DX の伴走支援をしています。
+        </div>
+
+        <div class="profile-quote">
+          ── 「現場で何が起きているか」を、自分の手でやってきた立場から、本日はお話できればと思います。
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="foot-when"><span class="time">15:30 − 16:20</span><span>全 50 分</span></div>
+      <div class="foot-where">天神 エルガーラホール 8F</div>
+      <div class="foot-byline">
+        <div class="foot-byline-label">▸ SPEAKER</div>
+        <div class="foot-byline-name"><span class="org">BLAN</span>代表　馬場 理菜子</div>
+      </div>
+    </footer>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 04: MY STORY (Template 4: Compare)
+============================================================ -->
+<section class="slide tmpl-compare" data-i="3">
+  <div class="page">
+
+    <header class="masthead">
+      <div class="brand">BLAN</div>
+      <div class="masthead-meta"><span>MY STORY</span><span class="sep">●</span><span>AI に出会う前と、出会ったあと</span></div>
+      <div class="masthead-edition">No.04 ／ STORY</div>
+    </header>
+
+    <main class="body">
+      <div class="compare-wrap">
+        <div class="sec-label">
+          <span class="sec-label-num">No. 04</span>
+          <span class="sec-label-tag">MY STORY ／ BEFORE × AFTER</span>
+        </div>
+        <div class="compare-head">
+          <h2 class="h">なぜ私が、<span class="em">AI の話</span>をしているのか</h2>
+          <p class="sub">「研修を売る側」ではなく、農業法人の現場で実際に使い始めた立場のお話です。</p>
+        </div>
+
+        <div class="compare-grid">
+          <div class="compare-card before">
+            <div class="compare-label">— BEFORE ／ 2021 〜</div>
+            <h3 class="compare-h">農業法人マネージャー時代の、リアル。</h3>
+            <p class="compare-body">
+              農園カフェの立ち上げ、楽天市場への出店、補助金管理、シフト作り、輸出受発注。<strong>「自分が辞めたら回らない」</strong>状態を、ずっと走り続けていました。<br>
+              <em>このままじゃ続かない。</em>そう感じた時に、業務管理と補助金の事務で AI を使い始めました。
+            </p>
+          </div>
+          <div class="compare-card after">
+            <div class="compare-label">— AFTER ／ AI を使い始めて</div>
+            <h3 class="compare-h">少しずつ、自分の時間が戻ってきた。</h3>
+            <p class="compare-body">
+              補助金の申請書類、発注書、輸出関連の処理など、<strong>繰り返しの作業</strong>を整理していくと、<em>月に 40 時間ほどの余白</em>が生まれました。<br>
+              それは、これまでできなかった新規企画や、休む時間に使えるようになった 40 時間でもありました。
+            </p>
+          </div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-item">
+            <div class="stat-num">月 40 時間</div>
+            <div class="stat-label">AI ─ TIME SAVED</div>
+            <div class="stat-desc">個人実績</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">売上 4 倍</div>
+            <div class="stat-label">REVENUE ─ GROWTH</div>
+            <div class="stat-desc">マネージャー在任中</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">1 億円超</div>
+            <div class="stat-label">SUBSIDY ─ TOTAL</div>
+            <div class="stat-desc">補助金採択累計</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="foot-when"><span class="time">15:30 − 16:20</span><span>全 50 分</span></div>
+      <div class="foot-where">天神 エルガーラホール 8F</div>
+      <div class="foot-byline">
+        <div class="foot-byline-label">▸ SPEAKER</div>
+        <div class="foot-byline-name"><span class="org">BLAN</span>代表　馬場 理菜子</div>
+      </div>
+    </footer>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 05: WHY CONSTRUCTION (Template 5: Manifesto)
+============================================================ -->
+<section class="slide tmpl-manifesto" data-i="4">
+  <div class="page">
+
+    <header class="masthead">
+      <div class="brand">BLAN</div>
+      <div class="masthead-meta"><span>WHY</span><span class="sep">●</span><span>業種は違っても、構造は似ている</span></div>
+      <div class="masthead-edition">No.05 ／ MANIFESTO</div>
+    </header>
+
+    <main class="body">
+      <div class="manifesto-wrap">
+        <div class="sec-label">
+          <span class="sec-label-num">No. 05</span>
+          <span class="sec-label-tag">WHY CONSTRUCTION & REAL ESTATE</span>
+        </div>
+
+        <p class="manifesto-pre">
+          独立してから、製造業・農業法人・食品メーカー・医療機関・<strong>そして建設・不動産会社</strong>と、業種をまたいでご一緒する機会をいただいてきました。
+          その中で、繰り返し聞いてきた言葉があります。
+        </p>
+
+        <blockquote class="manifesto-quote">
+          「人手が足りずに、<span class="em">新しい活動ができない</span>」<br>
+          「採用しても、<span class="em">すぐ辞めてしまう</span>」<br>
+          「ベテランが抜けたら、<span class="em">業務が止まる</span>」
+          <span class="vow">── これは、農業法人時代の私自身が、毎日感じていたことそのままでした。</span>
+        </blockquote>
+
+        <p class="manifesto-attribution">
+          業種が違うと、表面に出てくる業務はまったく違います。ですが、その<strong style="color:var(--sumi);font-style:normal">根っこにある "構造" はよく似ている</strong>と感じます。
+          だからこそ、他業界で実際に効いた AI の使い方を、<strong style="color:var(--orange-strong);font-style:normal">建設業界・不動産業界の文脈に翻訳しながら</strong>お伝えできるのではと考えています。
+        </p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="foot-when"><span class="time">15:30 − 16:20</span><span>全 50 分</span></div>
+      <div class="foot-where">天神 エルガーラホール 8F</div>
+      <div class="foot-byline">
+        <div class="foot-byline-label">▸ SPEAKER</div>
+        <div class="foot-byline-name"><span class="org">BLAN</span>代表　馬場 理菜子</div>
+      </div>
+    </footer>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 06: WHAT IS 人で消耗しない会社 (Template 4: Compare)
+============================================================ -->
+<section class="slide tmpl-compare" data-i="5">
+  <div class="page">
+
+    <header class="masthead">
+      <div class="brand">BLAN</div>
+      <div class="masthead-meta"><span>QUESTION</span><span class="sep">●</span><span>「人で消耗しない会社」とは</span></div>
+      <div class="masthead-edition">No.06 ／ DEFINITION</div>
+    </header>
+
+    <main class="body">
+      <div class="compare-wrap">
+        <div class="sec-label">
+          <span class="sec-label-num">No. 06</span>
+          <span class="sec-label-tag">TODAY'S QUESTION</span>
+        </div>
+        <div class="compare-head">
+          <h2 class="h">「<span class="em">人で消耗しない会社</span>」とは、<br>どんな会社でしょうか。</h2>
+          <p class="sub">たとえば、こんな会社のことかもしれません。</p>
+        </div>
+
+        <div class="compare-grid">
+          <div class="compare-card before">
+            <div class="compare-label">— 消耗してしまう会社</div>
+            <h3 class="compare-h">"あの人が辞めたら回らない"</h3>
+            <p class="compare-body">
+              ベテラン 1 人の頭の中に判断基準がある。誰かが抜けると業務が止まる。<br>
+              採用しても、教える時間がない。教える人が疲弊して辞める。<strong>その繰り返し</strong>になっている状態。
+            </p>
+          </div>
+          <div class="compare-card after">
+            <div class="compare-label">— 消耗しない会社</div>
+            <h3 class="compare-h">"知識と判断が、共有されている"</h3>
+            <p class="compare-body">
+              ベテランの暗黙知が、<em>新人にも引き出せる形</em>で残っている。<br>
+              同じ問い合わせに何度も答えなくて済む。<strong>少人数でも、業務が止まらない</strong>仕組みが、社内にある状態。
+            </p>
+          </div>
+        </div>
+
+        <p style="font-family:'Shippori Mincho',serif;font-style:italic;font-size:clamp(12px,1.25vw,16px);color:var(--sumi-mid);line-height:1.75;letter-spacing:.04em;max-width:48em;border-top:1px solid var(--rule-soft);padding-top:clamp(10px,1.4vh,18px);">
+          ── AI は、後者の <strong style="color:var(--sumi);font-style:normal">"仕組み" を作る</strong>のを、手伝ってくれる道具だと思っています。
+        </p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="foot-when"><span class="time">15:30 − 16:20</span><span>全 50 分</span></div>
+      <div class="foot-where">天神 エルガーラホール 8F</div>
+      <div class="foot-byline">
+        <div class="foot-byline-label">▸ SPEAKER</div>
+        <div class="foot-byline-name"><span class="org">BLAN</span>代表　馬場 理菜子</div>
+      </div>
+    </footer>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 07: 3つの現実 (Template 6: Grid3)
+============================================================ -->
+<section class="slide tmpl-grid3" data-i="6">
+  <div class="page">
+
+    <header class="masthead">
+      <div class="brand">BLAN</div>
+      <div class="masthead-meta"><span>THE REALITY</span><span class="sep">●</span><span>3 つの現実</span></div>
+      <div class="masthead-edition">No.07 ／ REALITY</div>
+    </header>
+
+    <main class="body">
+      <div class="grid-wrap">
+        <div class="sec-label">
+          <span class="sec-label-num">No. 07</span>
+          <span class="sec-label-tag">THE REALITY</span>
+        </div>
+        <div class="grid-head">
+          <h2 class="h">建設・不動産業界で、よく伺う<br><span class="em">3 つの現実</span></h2>
+          <p class="sub">経営者の方々や現場責任者の方々と話す中で、繰り返しお聞きすることです。</p>
+        </div>
+
+        <div class="grid-cards">
+          <div class="grid-card">
+            <div class="num">i.</div>
+            <h3 class="h">採用市場の<br>厳しさ</h3>
+            <p class="voice">「募集をかけても、応募がほとんど来ない」</p>
+            <p class="body-txt">求人媒体に出しても反応がない。条件を上げるべきか、別の媒体か。<strong>判断する材料がない</strong>まま、感覚で続けている状態。</p>
+          </div>
+          <div class="grid-card">
+            <div class="num">ii.</div>
+            <h3 class="h">育成・OJT の<br>属人化</h3>
+            <p class="voice">「教える人によって、教え方が違ってしまう」</p>
+            <p class="body-txt">マニュアルはあるけれど、現場で使われていない。ベテランの頭の中に判断基準がある。<strong>新人が「聞ける人」がいないと止まってしまう</strong>。</p>
+          </div>
+          <div class="grid-card">
+            <div class="num">iii.</div>
+            <h3 class="h">技術継承への<br>不安</h3>
+            <p class="voice">「あと数年で、あの人が引退してしまう」</p>
+            <p class="body-txt">熟練の判断や経験を、次の世代に渡せるか。<strong>記録に残せていないこと</strong>がたくさんある、と感じている経営幹部の方が少なくありません。</p>
+          </div>
+        </div>
+
+        <p class="grid-tail">これらは「人の問題」というより、<strong style="color:var(--sumi);font-style:normal">"仕組みがまだ作られていない"</strong>ことから生まれている、と私は捉えています。</p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="foot-when"><span class="time">15:30 − 16:20</span><span>全 50 分</span></div>
+      <div class="foot-where">天神 エルガーラホール 8F</div>
+      <div class="foot-byline">
+        <div class="foot-byline-label">▸ SPEAKER</div>
+        <div class="foot-byline-name"><span class="org">BLAN</span>代表　馬場 理菜子</div>
+      </div>
+    </footer>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 08: 3 themes overview (Template 6: Grid3)
+============================================================ -->
+<section class="slide tmpl-grid3" data-i="7">
+  <div class="page">
+
+    <header class="masthead">
+      <div class="brand">BLAN</div>
+      <div class="masthead-meta"><span>3 THEMES</span><span class="sep">●</span><span>本日のメインパート</span></div>
+      <div class="masthead-edition">No.08 ／ OVERVIEW</div>
+    </header>
+
+    <main class="body">
+      <div class="grid-wrap">
+        <div class="sec-label">
+          <span class="sec-label-num">No. 08</span>
+          <span class="sec-label-tag">3 THEMES ／ 本日のメインパート</span>
+        </div>
+        <div class="grid-head">
+          <h2 class="h">建設・不動産業界に今必要な、<br><span class="em">3 つの AI 活用</span></h2>
+          <p class="sub">先ほどの 3 つの現実 ── 採用・育成・技術継承 ── に、それぞれ対応する形でお話しします。</p>
+        </div>
+
+        <div class="grid-cards">
+          <div class="grid-card">
+            <div class="num">01</div>
+            <h3 class="h">採用市場の<br>可視化</h3>
+            <p class="body-txt">求人媒体や競合の動きを AI で整理し、<strong>「いくらの条件なら、何人くらいに届くか」</strong>を見えるようにする。感覚ではなく材料をもって判断するためのテーマです。</p>
+          </div>
+          <div class="grid-card">
+            <div class="num">02</div>
+            <h3 class="h">技術継承の AI 化<br>「生きるマニュアル」</h3>
+            <p class="body-txt">ベテランの判断・コツを、<strong>現場で更新され続けるマニュアル</strong>として残していく。新人がいつでも "先輩に聞ける" 状態を AI で作ります。</p>
+            <div><span class="demo-pin">● LIVE DEMO</span></div>
+          </div>
+          <div class="grid-card">
+            <div class="num">03</div>
+            <h3 class="h">法改正・補助金<br>キャッチアップ</h3>
+            <p class="body-txt">建設業法・宅建業法の改正、補助金の更新、制度変更 ── <strong>毎日チェックする時間がない情報</strong>を、AI に見張ってもらう仕組み。本業の時間を取り戻すためのテーマです。</p>
+          </div>
+        </div>
+
+        <p class="grid-tail">どれも、特別な技術知識がなくても始められるものを選んでいます。</p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="foot-when"><span class="time">15:30 − 16:20</span><span>全 50 分</span></div>
+      <div class="foot-where">天神 エルガーラホール 8F</div>
+      <div class="foot-byline">
+        <div class="foot-byline-label">▸ SPEAKER</div>
+        <div class="foot-byline-name"><span class="org">BLAN</span>代表　馬場 理菜子</div>
+      </div>
+    </footer>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 09: THEME 01 採用 (Template 7: Deep Dive)
+============================================================ -->
+<section class="slide tmpl-deep" data-i="8">
+  <div class="page">
+
+    <header class="masthead">
+      <div class="brand">BLAN</div>
+      <div class="masthead-meta"><span>THEME 01</span><span class="sep">●</span><span>採用</span></div>
+      <div class="masthead-edition">No.09 ／ DEEP DIVE</div>
+    </header>
+
+    <main class="body">
+      <div class="deep-wrap">
+        <div class="deep-head">
+          <div class="deep-num">01</div>
+          <div class="deep-meta">
+            <span class="deep-tag">▸ THEME 01 ／ 採用</span>
+            <h2 class="deep-h">採用市場の、<span class="em">可視化</span></h2>
+            <p class="deep-sub">"募集しても応募が来ない" の<strong>原因</strong>を、感覚ではなく材料をもって見ていく。</p>
+          </div>
+        </div>
+
+        <div class="deep-grid">
+          <div class="deep-scene">
+            <div class="deep-scene-label">— こんな状況、ありませんか</div>
+            <h3 class="deep-scene-h">求人を出しているが、応募が思うように来ない。</h3>
+            <p class="deep-scene-body">求人媒体に出している条件・地域・職種。<strong>競合他社は、同じ条件でどれくらい応募が集まっているのか</strong>。これまでは、知る方法があまりなかったのではと思います。<br>「条件を上げるべきか」「媒体を変えるべきか」── 判断する材料がないと、感覚で動くしかありません。</p>
+          </div>
+          <div class="deep-scene">
+            <div class="deep-scene-label">— AI でできるようになること</div>
+            <h3 class="deep-scene-h">複数の求人媒体を横断して、相場と動きを整理する。</h3>
+            <p class="deep-scene-body">求人媒体やハローワークの情報を <strong>AI に継続的に集めてもらう</strong>と、自社のエリアでどの条件にどれだけ応募が動いているかが見えてきます。<br>「<em>この時期、この職種は、月給○円以上で動いている</em>」── そんな相場感をもったうえで、求人原稿を作ることもできます。</p>
+          </div>
+        </div>
+
+        <p class="deep-footnote"><strong>補足。</strong>個人情報や非公開情報を AI に渡す必要はありません。<em>公開されている求人情報</em>を整理してもらうイメージです。後半の AI 概論で、扱う情報の範囲についても少し触れます。</p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="foot-when"><span class="time">15:30 − 16:20</span><span>全 50 分</span></div>
+      <div class="foot-where">天神 エルガーラホール 8F</div>
+      <div class="foot-byline">
+        <div class="foot-byline-label">▸ SPEAKER</div>
+        <div class="foot-byline-name"><span class="org">BLAN</span>代表　馬場 理菜子</div>
+      </div>
+    </footer>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 10: THEME 02 技術継承 (Template 7: Deep Dive)
+============================================================ -->
+<section class="slide tmpl-deep" data-i="9">
+  <div class="page">
+
+    <header class="masthead">
+      <div class="brand">BLAN</div>
+      <div class="masthead-meta"><span>THEME 02</span><span class="sep">●</span><span>育成・技術継承</span></div>
+      <div class="masthead-edition">No.10 ／ DEEP DIVE</div>
+    </header>
+
+    <main class="body">
+      <div class="deep-wrap">
+        <div class="deep-head">
+          <div class="deep-num">02</div>
+          <div class="deep-meta">
+            <span class="deep-tag">▸ THEME 02 ／ 育成・技術継承</span>
+            <h2 class="deep-h">技術継承の AI 化 ／ <span class="em">「生きるマニュアル」</span></h2>
+            <p class="deep-sub">現場で<strong>更新され続ける</strong>業務マニュアル・OJT チェックリストを、AI と一緒に作っていく。 <span style="display:inline-block;font-family:'Courier Prime',monospace;font-size:.65em;letter-spacing:.18em;font-weight:700;background:var(--orange);color:#fff;padding:3px 10px;margin-left:8px;">● LIVE DEMO</span></p>
+          </div>
+        </div>
+
+        <div class="deep-grid">
+          <div class="deep-scene">
+            <div class="deep-scene-label">— 「生きるマニュアル」とは</div>
+            <h3 class="deep-scene-h">現場で使われ、現場で更新されるマニュアル。</h3>
+            <p class="deep-scene-body">多くの会社にマニュアルはあるけれど、<strong>書いた後に更新されていない</strong>ことが多いと感じます。現場のやり方は少しずつ変わるのに、マニュアルだけ古いまま、というケースです。<br>AI を使うと、<em>現場の声をその場で取り込んで、マニュアルを少しずつ育てていく</em>ことができます。OJT チェックリストも同じ仕組みで運用できます。</p>
+          </div>
+          <div class="deep-scene">
+            <div class="deep-scene-label">— こんな使い方</div>
+            <h3 class="deep-scene-h">ベテランの判断を、AI に教えていく。</h3>
+            <p class="deep-scene-body">「この材料がこの状態のときは、こう判断する」「この工種で、ここを見落とすと後でやり直しになる」── そういった<strong>ベテランの頭の中にあること</strong>を AI に残していくと、<em>新人がいつでも "先輩に聞ける" 状態</em>に近づきます。<br>退職や引退で失われがちな知識を、会社の資産として残す方向の使い方です。</p>
+          </div>
+        </div>
+
+        <p class="deep-footnote"><strong>このあと実技デモ。</strong> Anthropic 社の <em>Claude（クロード）</em>という生成 AI を使って、簡単な業務マニュアルが画面の上でどう生まれていくかを、実際の操作でお見せします。</p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="foot-when"><span class="time">15:30 − 16:20</span><span>全 50 分</span></div>
+      <div class="foot-where">天神 エルガーラホール 8F</div>
+      <div class="foot-byline">
+        <div class="foot-byline-label">▸ SPEAKER</div>
+        <div class="foot-byline-name"><span class="org">BLAN</span>代表　馬場 理菜子</div>
+      </div>
+    </footer>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 11: THEME 03 法改正 (Template 7: Deep Dive)
+============================================================ -->
+<section class="slide tmpl-deep" data-i="10">
+  <div class="page">
+
+    <header class="masthead">
+      <div class="brand">BLAN</div>
+      <div class="masthead-meta"><span>THEME 03</span><span class="sep">●</span><span>法改正・補助金</span></div>
+      <div class="masthead-edition">No.11 ／ DEEP DIVE</div>
+    </header>
+
+    <main class="body">
+      <div class="deep-wrap">
+        <div class="deep-head">
+          <div class="deep-num">03</div>
+          <div class="deep-meta">
+            <span class="deep-tag">▸ THEME 03 ／ 法改正・補助金</span>
+            <h2 class="deep-h">法改正と補助金の、<span class="em">キャッチアップ</span></h2>
+            <p class="deep-sub">毎日チェックする時間がない情報を、<strong>AI に見張ってもらう</strong>仕組み。</p>
+          </div>
+        </div>
+
+        <div class="deep-grid">
+          <div class="deep-scene">
+            <div class="deep-scene-label">— こんなお悩み</div>
+            <h3 class="deep-scene-h">情報が多すぎて、本業を圧迫している。</h3>
+            <p class="deep-scene-body">建設業法・宅建業法の改正、省エネ法、補助金の公募スケジュール、業界団体からの通達、所有者不明土地法、相続登記義務化 ── <strong>どれも見落とせないけれど、毎日見ている時間はない</strong>。<br>気付いたら募集が終わっていた、対応のタイミングを逃した、というご経験はありませんか。</p>
+          </div>
+          <div class="deep-scene">
+            <div class="deep-scene-label">— AI でできるようになること</div>
+            <h3 class="deep-scene-h">必要なときに、必要な情報が手元に来る。</h3>
+            <p class="deep-scene-body">関係省庁や業界団体のサイトを <strong>AI に定期的にチェックしてもらう</strong>仕組みを作っておくと、<em>自社に関係する更新があったときだけ</em>知らせてもらえます。<br>補助金の場合は、要件を満たすかどうかの一次判定や、申請書類の下書きまで一緒に整えてくれます (最終確認は人が行います)。</p>
+          </div>
+        </div>
+
+        <p class="deep-footnote"><strong>業務効率化のその先に。</strong>こうした「日々の負担」が軽くなると、<em>新規営業や販路開拓に使える時間</em>が生まれてきます。次のスライドで、少しだけ触れさせてください。</p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="foot-when"><span class="time">15:30 − 16:20</span><span>全 50 分</span></div>
+      <div class="foot-where">天神 エルガーラホール 8F</div>
+      <div class="foot-byline">
+        <div class="foot-byline-label">▸ SPEAKER</div>
+        <div class="foot-byline-name"><span class="org">BLAN</span>代表　馬場 理菜子</div>
+      </div>
+    </footer>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 12: BEYOND (Template 5: Manifesto)
+============================================================ -->
+<section class="slide tmpl-manifesto" data-i="11">
+  <div class="page">
+
+    <header class="masthead">
+      <div class="brand">BLAN</div>
+      <div class="masthead-meta"><span>BEYOND</span><span class="sep">●</span><span>業務効率化の、その先に</span></div>
+      <div class="masthead-edition">No.12 ／ BEYOND</div>
+    </header>
+
+    <main class="body">
+      <div class="manifesto-wrap">
+        <div class="sec-label">
+          <span class="sec-label-num">No. 12</span>
+          <span class="sec-label-tag">BEYOND ／ 業務効率化の、その先に</span>
+        </div>
+
+        <p class="manifesto-pre">
+          「現場業務が忙しすぎて、新規営業や販路開拓まで手が回らない」── ペライチの講座紹介でも触れられていた、よくお伺いするお悩みです。
+        </p>
+
+        <blockquote class="manifesto-quote">
+          余裕が生まれたら、<br>次は <span class="em">販路</span>。
+          <span class="vow">AI で業務時間を取り戻すことは、それ自体がゴールではなく、本来やりたかったこと ── 新しいお客さまとの出会い、事業の次の一手 ── に、時間を使うための入り口だと考えています。</span>
+        </blockquote>
+
+        <p class="manifesto-attribution">
+          ── 採用市場の可視化や法改正キャッチアップで生まれた余裕が、販路開拓や新規事業に向けた動きにつながっていく、という流れです。
+        </p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="foot-when"><span class="time">15:30 − 16:20</span><span>全 50 分</span></div>
+      <div class="foot-where">天神 エルガーラホール 8F</div>
+      <div class="foot-byline">
+        <div class="foot-byline-label">▸ SPEAKER</div>
+        <div class="foot-byline-name"><span class="org">BLAN</span>代表　馬場 理菜子</div>
+      </div>
+    </footer>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 13: AI概論 (Template 8 variant: Anthropic panel)
+============================================================ -->
+<section class="slide tmpl-points" data-i="12">
+  <div class="page">
+
+    <header class="masthead">
+      <div class="brand">BLAN</div>
+      <div class="masthead-meta"><span>AI 概論</span><span class="sep">●</span><span>経営者の方へ</span></div>
+      <div class="masthead-edition">No.13 ／ AI PRIMER</div>
+    </header>
+
+    <main class="body">
+      <div class="points-wrap">
+        <div class="sec-label">
+          <span class="sec-label-num">No. 13</span>
+          <span class="sec-label-tag">FOR EXECUTIVES ／ AI 概論</span>
+        </div>
+        <div class="points-head">
+          <h2 class="h">AI を "使う" だけでなく、<br>AI が映し出す <span class="em">"標準"</span> にも、少しだけ。</h2>
+          <p class="sub">経営層の方には、AI の <strong style="color:var(--sumi)">"使い方"</strong> と並んで、AI の <strong style="color:var(--sumi)">"仕組み"</strong> を少しだけ知っておいていただけたらと思っています。</p>
+        </div>
+
+        <div class="anthropic-panel">
+          <div class="ap-mark">✱</div>
+          <div class="ap-text">
+            <div class="ap-name">Anthropic</div>
+            <div class="ap-desc">— Claude を開発する、AI 安全研究企業 —</div>
+            <div class="ap-meta">
+              <span class="ap-tag">claude.ai</span>
+              <span class="ap-loc">SAN FRANCISCO, USA</span>
+            </div>
+          </div>
+        </div>
+
+        <p style="font-family:'Shippori Mincho',serif;font-size:clamp(12px,1.25vw,16px);color:var(--sumi-mid);line-height:1.85;letter-spacing:.04em;max-width:50em;">
+          生成 AI は、世界中の文章を学習して作られています。だからこそ、AI に何かを聞くと、<strong style="color:var(--sumi)">"世間的にはこう答えるのが標準"</strong> という答えが返ってきやすい性質があります。<br>
+          これは便利な一方で、<span style="color:var(--orange-strong);font-weight:600">"汎用的な答えだけ" だと、御社の独自性が薄まる方向にも働きます</span>。 だから本日のテーマでもある、<strong style="color:var(--sumi)">「ツールに自社を合わせるのではなく、自社にツールを合わせる」</strong> ── ここが、経営判断として大切になってくると考えています。
+        </p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="foot-when"><span class="time">15:30 − 16:20</span><span>全 50 分</span></div>
+      <div class="foot-where">天神 エルガーラホール 8F</div>
+      <div class="foot-byline">
+        <div class="foot-byline-label">▸ SPEAKER</div>
+        <div class="foot-byline-name"><span class="org">BLAN</span>代表　馬場 理菜子</div>
+      </div>
+    </footer>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 14: CARE POINTS (Template 8: Points3)
+============================================================ -->
+<section class="slide tmpl-points" data-i="13">
+  <div class="page">
+
+    <header class="masthead">
+      <div class="brand">BLAN</div>
+      <div class="masthead-meta"><span>BEFORE YOU START</span><span class="sep">●</span><span>大切にしたい 3 つのこと</span></div>
+      <div class="masthead-edition">No.14 ／ CARE POINTS</div>
+    </header>
+
+    <main class="body">
+      <div class="points-wrap">
+        <div class="sec-label">
+          <span class="sec-label-num">No. 14</span>
+          <span class="sec-label-tag">BEFORE YOU START</span>
+        </div>
+        <div class="points-head">
+          <h2 class="h">始める前に、頭の片隅に <span class="em">3 つだけ</span></h2>
+          <p class="sub">AI は便利ですが、万能ではありません。「<strong style="color:var(--sumi)">どこが苦手か</strong>」を先に知っておくと、安心して使い始められます。</p>
+        </div>
+
+        <div class="points-grid">
+          <div class="points-card">
+            <div class="points-num">i.</div>
+            <h3 class="points-h">AI は、否定が少し苦手</h3>
+            <p class="points-body">「これで合っていますか？」と聞くと、AI は <strong>同意しがち</strong>な傾向があります。最終的な判断は、必ず人の目で行うことが大切です。</p>
+            <p class="points-note">── AI は "下書き役"。最終確認は、現場の方が行う。</p>
+          </div>
+          <div class="points-card">
+            <div class="points-num">ii.</div>
+            <h3 class="points-h">前提が伝わらないと、一般論になる</h3>
+            <p class="points-body">自社のルールや業界の特性を伝えずに聞くと、<strong>一般的な答え</strong>しか返ってきません。建設業法・宅建業法や社内規程など、前提を一緒に渡すことで精度が上がります。</p>
+            <p class="points-note">── 「うちのルール」を先に共有する。業界特有の事情も、丁寧に。</p>
+          </div>
+          <div class="points-card">
+            <div class="points-num">iii.</div>
+            <h3 class="points-h">"戻れる仕組み" を、用意しておく</h3>
+            <p class="points-body">AI に任せきりにすると、後から修正がしにくい状態になることがあります。<strong>少しずつ確認しながら進める</strong>運用が、長続きします。</p>
+            <p class="points-note">── こまめに保存・確認。気軽に "やり直せる" 状態を保つ。</p>
+          </div>
+        </div>
+
+        <p class="points-tail">この 3 つを知っておくと、AI は <strong style="color:var(--sumi);font-style:normal">"頼れる道具"</strong> として、現場に馴染んでいきます。</p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="foot-when"><span class="time">15:30 − 16:20</span><span>全 50 分</span></div>
+      <div class="foot-where">天神 エルガーラホール 8F</div>
+      <div class="foot-byline">
+        <div class="foot-byline-label">▸ SPEAKER</div>
+        <div class="foot-byline-name"><span class="org">BLAN</span>代表　馬場 理菜子</div>
+      </div>
+    </footer>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 15: CLOSING (Template 1 variant: Close)
+============================================================ -->
+<section class="slide tmpl-close" data-i="14">
+  <div class="page">
+
+    <header class="masthead">
+      <div class="brand">BLAN</div>
+      <div class="masthead-meta"><span>CLOSING</span><span class="sep">●</span><span>ご清聴ありがとうございました</span></div>
+      <div class="masthead-edition">No.15 ／ THANK YOU</div>
+    </header>
+
+    <main class="body">
+      <div class="close-wrap">
+        <div class="close-label">▸ TODAY'S MESSAGE</div>
+
+        <h2 class="close-h">
+          ツールに <span class="em-pri">自社を合わせる</span> のではなく、<br>
+          <span class="em-pos">自社にツールを合わせる</span>。
+        </h2>
+
+        <p class="close-body">
+          本日お話しした 3 つのテーマ ── 採用市場の可視化／技術継承の AI 化／法改正キャッチアップ ── は、どれも<strong>御社の強みをもっと引き出すための、入り口</strong>だと考えています。<br>
+          御社にしかない知見と、AI という道具を組み合わせる。そのきっかけになれば嬉しく思います。
+        </p>
+
+        <div class="close-sig">
+          <div class="close-sig-line"></div>
+          <div class="close-sig-text">いつかを、今に。</div>
+          <div class="close-sig-line"></div>
+        </div>
+
+        <p class="close-contact">
+          ── BLAN ／ Rinako Baba ／ rinako@blan-ai.jp ／ blan-ai.jp
+        </p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="foot-when"><span class="time">ご質問は</span><span>会場ブースにて</span></div>
+      <div class="foot-where">無理な営業はいたしません</div>
+      <div class="foot-byline">
+        <div class="foot-byline-label">▸ SPEAKER</div>
+        <div class="foot-byline-name"><span class="org">BLAN</span>代表　馬場 理菜子</div>
+      </div>
+    </footer>
+
+  </div>
+</section>
+
+</div><!-- /deck -->
+
+<script>
+(function(){
+  var slides = document.querySelectorAll('.slide');
+  var total = slides.length;
+  var cur = 0;
+  var busy = false;
+
+  // dots
+  var dotsEl = document.getElementById('dots');
+  slides.forEach(function(_, i){
+    var d = document.createElement('button');
+    d.className = 'dot' + (i===0 ? ' on' : '');
+    d.addEventListener('click', function(){ go(i); });
+    dotsEl.appendChild(d);
+  });
+  document.getElementById('tot').textContent = String(total).padStart(2, '0');
+
+  function sync(){
+    document.getElementById('progress').style.width = ((cur+1)/total*100) + '%';
+    document.getElementById('cur').textContent = String(cur+1).padStart(2, '0');
+    document.querySelectorAll('.dot').forEach(function(d, i){
+      d.classList.toggle('on', i === cur);
+    });
+  }
+  sync();
+
+  function go(idx){
+    if (busy || idx === cur || idx < 0 || idx >= total) return;
+    busy = true;
+    var prev = slides[cur], next = slides[idx];
+    prev.classList.remove('active');
+    prev.classList.add('exit');
+    next.classList.add('active');
+    cur = idx;
+    sync();
+    setTimeout(function(){
+      prev.classList.remove('exit');
+      busy = false;
+    }, 1000);
+  }
+
+  // keyboard
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault(); go(cur + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault(); go(cur - 1);
+    }
+  });
+
+  // click (desktop only, mobile uses scroll)
+  document.addEventListener('click', function(e){
+    if (window.innerWidth <= 900) return;
+    if (e.target.closest('.dots')) return;
+    if (e.clientX > window.innerWidth * 0.5) go(cur + 1);
+    else go(cur - 1);
+  });
+})();
+</script>
+
+</body>
+</html>
