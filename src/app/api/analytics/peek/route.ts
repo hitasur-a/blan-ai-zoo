@@ -30,11 +30,14 @@ export async function GET(req: NextRequest) {
     // 直近 limit 件
     filtered = filtered.slice(-limit).reverse();
 
-    // 各 blob の中身を fetch
+    // 各 blob の中身を fetch (Private store なので Authorization 必須)
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
     const events = await Promise.all(
       filtered.map(async (b) => {
         try {
-          const r = await fetch(b.url);
+          const r = await fetch(b.url, {
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          });
           if (!r.ok) return { pathname: b.pathname, error: `${r.status}` };
           const json = await r.json();
           return { pathname: b.pathname, uploadedAt: b.uploadedAt, ...json };
