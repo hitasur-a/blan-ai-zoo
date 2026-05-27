@@ -17,6 +17,7 @@ import type { DiagnosisResult } from "@/lib/types";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { logAnalytics } from "@/lib/analytics";
 
 export default function ResultPage() {
   const [result, setResult] = useState<DiagnosisResult | null>(null);
@@ -32,6 +33,22 @@ export default function ResultPage() {
       const answers: Answer[] = JSON.parse(stored);
       const r = diagnose(answers, QUESTIONS);
       setResult(r);
+      // 診断結果を analytics に記録 (boothのアンケート代わり本丸データ)
+      logAnalytics({
+        demoKey: "diagnose",
+        kind: "result",
+        payload: {
+          answers,
+          primaryAnimal: r.primaryAnimal,
+          primaryDecorator: r.primaryDecorator,
+          subAnimal: r.subAnimal,
+          subDecorator: r.subDecorator,
+          needsConsult: r.needsConsult,
+          animalScores: r.animalScores,
+          decoratorScores: r.decoratorScores,
+          recommendedDemos: r.recommendedDemos,
+        },
+      });
     } catch {
       // 回答が壊れている
     }
