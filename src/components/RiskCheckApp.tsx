@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FileText,
   Upload,
@@ -11,11 +11,23 @@ import {
   CheckCircle2,
   AlertTriangle,
   ShieldCheck,
+  FileCheck2,
 } from "lucide-react";
 import { Markdown } from "./RiskMarkdown";
 import { logAnalytics } from "@/lib/analytics";
 
 export type Mode = "contract" | "explanation";
+
+type SampleEntry = {
+  file: string;
+  label: string;
+  note: string;
+  bytes: number;
+  pages: number;
+  engine: string;
+  text: string;
+};
+type SampleManifest = { contract: SampleEntry[]; explanation: SampleEntry[] };
 export type Perspective = "buyer" | "seller" | "neutral";
 export type PropertyType = "residential-buy" | "residential-rent" | "commercial";
 
@@ -59,7 +71,29 @@ export function RiskCheckApp({ mode, sampleText }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [pdfSamples, setPdfSamples] = useState<SampleEntry[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // プリパース済みサンプル PDF (manifest.json) をロード
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/sample-pdfs/manifest.json")
+      .then((r) => (r.ok ? (r.json() as Promise<SampleManifest>) : null))
+      .then((m) => {
+        if (!cancelled && m && m[mode]) setPdfSamples(m[mode]);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [mode]);
+
+  const loadPdfSample = (s: SampleEntry) => {
+    if (isStreaming || isParsingPdf) return;
+    setText(s.text);
+    setPdfInfo({ name: s.file, pages: s.pages, bytes: s.bytes });
+    setError(null);
+  };
 
   const riskCount = useMemo(() => {
     const h = (output.match(/重要度[ \-:：]?\[?高\]?|—\s*重要度\s*\[?高\]?/g) ?? []).length;
@@ -278,6 +312,32 @@ export function RiskCheckApp({ mode, sampleText }: Props) {
           onDragLeave={() => setIsDragging(false)}
           onDrop={onDrop}
         >
+          {/* プリパース済みサンプル PDF: ワンクリックで投入 (アップロードも下に併存) */}
+          {pdfSamples.length > 0 && (
+            <div className="rounded-xl border border-rule bg-orange-50/40 p-3 mb-2">
+              <div className="text-[11px] font-bold text-ink-soft mb-2 flex items-center gap-1.5 uppercase tracking-widest">
+                <FileCheck2 size={12} className="text-[color:var(--accent)]" />
+                サンプル PDF をワンクリック投入
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+                {pdfSamples.map((s) => (
+                  <button
+                    key={s.file}
+                    onClick={() => loadPdfSample(s)}
+                    disabled={isStreaming || isParsingPdf}
+                    className={`text-left px-3 py-2 rounded-lg border transition-all bg-white hover:border-[color:var(--accent)] hover:shadow-sm ${
+                      pdfInfo?.name === s.file ? "border-[color:var(--accent)] ring-2 ring-[color:var(--accent)]/30" : "border-rule"
+                    }`}
+                  >
+                    <div className="text-[12px] font-bold text-ink leading-tight">{s.label}</div>
+                    <div className="text-[10px] text-ink-soft mt-0.5 leading-tight">{s.note}</div>
+                    <div className="text-[10px] text-slate-400 mt-1 font-mono">{s.pages}p ／ {(s.bytes / 1024).toFixed(0)}KB</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className={`rounded-xl border-2 border-dashed transition-colors p-3 mb-2 ${isDragging ? "border-[color:var(--accent)] bg-orange-50" : "border-rule bg-white"}`}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="flex items-center gap-2 text-xs text-ink-soft">
