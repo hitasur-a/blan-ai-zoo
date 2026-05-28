@@ -8,7 +8,6 @@ import {
   Loader2,
   Download,
   Copy,
-  CheckCircle2,
   AlertTriangle,
   ShieldCheck,
   FileCheck2,
@@ -351,14 +350,6 @@ export function RiskCheckApp({ mode, sampleText }: Props) {
                   クリックして選択
                 </button>
               </div>
-              {pdfInfo && (
-                <div className="text-[11px] text-ink-soft inline-flex items-center gap-1.5">
-                  <CheckCircle2 size={12} className="text-[color:var(--low)]" />
-                  <span className="font-bold">{pdfInfo.name}</span>
-                  {pdfInfo.pages > 0 && <span>({pdfInfo.pages}p)</span>}
-                  <span className="text-slate-400">{(pdfInfo.bytes / 1024).toFixed(1)}KB</span>
-                </div>
-              )}
               {isParsingPdf && (
                 <div className="text-[11px] text-amber-700 inline-flex items-center gap-1.5">
                   <Loader2 size={12} className="animate-spin" />

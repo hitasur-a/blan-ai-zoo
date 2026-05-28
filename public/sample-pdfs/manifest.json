@@ -2,8 +2,8 @@
   "contract": [
     {
       "file": "01_sanpai.pdf",
-      "label": "産廃処理 (建設関連)",
-      "note": "業界標準の典型",
+      "label": "産業廃棄物 委託契約",
+      "note": "排出事業者・処分業者の標準フォーマット",
       "bytes": 814685,
       "pages": 10,
       "engine": "claude-vision",
@@ -12,7 +12,7 @@
     {
       "file": "02_baibai.pdf",
       "label": "不動産売買契約書",
-      "note": "今回案件 / 馬場さん用意",
+      "note": "中古マンション売買・宅建業法対象",
       "bytes": 14263,
       "pages": 4,
       "engine": "claude-vision",
@@ -20,8 +20,8 @@
     },
     {
       "file": "03_kouji_ukeoi.pdf",
-      "label": "工事請負 (インフレスライド)",
-      "note": "建設業 / ⑧用",
+      "label": "工事請負 (インフレスライド条項)",
+      "note": "公共工事・物価変動対応の典型",
       "bytes": 161261,
       "pages": 1,
       "engine": "pdf-parse",
@@ -32,7 +32,7 @@
     {
       "file": "01_baibai.pdf",
       "label": "不動産売買 重要事項説明書",
-      "note": "今回案件 / 馬場さん用意",
+      "note": "宅建業法35条準拠・売買用",
       "bytes": 16768,
       "pages": 5,
       "engine": "claude-vision",
