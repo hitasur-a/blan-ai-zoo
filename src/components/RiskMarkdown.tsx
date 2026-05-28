@@ -86,8 +86,39 @@ interface Block {
   riskBody?: string;
 }
 
-function splitIntoBlocks(markdown: string): Block[] {
+// AI が指示無視して「最重要リスク(重要度:高)」+ 番号付きで出してくるケースを、
+// 既存の「### リスク N: ... [重要度: 高]」形式に変換して renderer の同一路線に乗せる
+function normalizeAlternateFormat(markdown: string): string {
   const lines = markdown.split("\n");
+  const out: string[] = [];
+  let currentSev: "高" | "中" | "低" | null = null;
+  let riskCounter = 0;
+
+  for (const line of lines) {
+    // グループ見出し検出: "最重要リスク(重要度:高)" / "## 重要度:高" / "### 重要リスク(重要度:中)" 等
+    const groupMatch = line.match(/(?:^#{1,3}\s*)?[^\n]*重要度[\s\-:：]*\**\[?\s*(高|中|低)\s*\]?\**[^\n]*/);
+    const isGroupHeader = groupMatch && /リスク|重要度/.test(line) && !/^[-*]\s/.test(line) && !/^###\s+リスク\s*\d/.test(line);
+    if (isGroupHeader) {
+      currentSev = groupMatch[1] as "高" | "中" | "低";
+      // グループ見出しは出力から除去 (アコーディオン側のチップで表現するため)
+      continue;
+    }
+    // 番号付きリスク: "1. [全体] 書類種別と物件種別の不一致" or **囲み版
+    const numRiskMatch = line.match(/^\s*\**(\d+)\.\s+(\[[^\]]+\])?\s*(.+?)\**\s*$/);
+    if (numRiskMatch && currentSev) {
+      riskCounter += 1;
+      const bracket = numRiskMatch[2] || "";
+      const title = numRiskMatch[3].replace(/\*\*/g, "").trim();
+      out.push(`### リスク ${riskCounter}: ${bracket} ${title} [重要度: ${currentSev}]`.replace(/\s+/g, " "));
+      continue;
+    }
+    out.push(line);
+  }
+  return out.join("\n");
+}
+
+function splitIntoBlocks(markdown: string): Block[] {
+  const lines = normalizeAlternateFormat(markdown).split("\n");
   const blocks: Block[] = [];
   let current: { kind: Block["kind"]; lines: string[]; title?: string; severity?: Severity; riskHeader?: string } | null = null;
 
