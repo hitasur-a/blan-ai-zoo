@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+<meta name="googlebot" content="noindex,nofollow">
+<title>採用市場の可視化 ─ 建設業界 × 生成AI ／ BLAN 馬場理菜子</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@300;400;500;600;700;900&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;-webkit-font-smoothing:antialiased}
+
+:root{
+  --navy:#0f3a4a;
+  --navy-deep:#082531;
+  --teal:#3d8593;
+  --teal-soft:#7eb5bf;
+  --teal-pale:#bcdde2;
+  --yellow:#f4d03f;
+  --yellow-deep:#e8b923;
+  --yellow-soft:#fce98a;
+  --cream:#faf7f2;
+  --cream-dark:#f0ebe0;
+  --paper:#fdfcf9;
+  --text:#1a2530;
+  --text-mid:#475761;
+  --text-light:#7a8892;
+  --text-faint:#a8b3bd;
+  --border:rgba(15,58,74,.1);
+  --border-strong:rgba(15,58,74,.18);
+  --red:#c8503c;
+}
+
+body{font-family:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif;color:var(--text);background:var(--cream)}
+.serif{font-family:'Noto Serif JP','Hiragino Mincho ProN',serif}
+.display{font-family:'DM Serif Display','Noto Serif JP',serif}
+.mono{font-family:'JetBrains Mono','Courier New',monospace}
+
+/* ─────────── DECK ─────────── */
+.deck{position:relative;width:100vw;height:100vh;overflow:hidden}
+.slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .9s cubic-bezier(.4,0,.2,1),transform .9s cubic-bezier(.4,0,.2,1);transform:translateY(20px);padding:48px}
+.slide.active{opacity:1;visibility:visible;transform:translateY(0)}
+.slide.exit-up{opacity:0;transform:translateY(-28px)}
+
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--yellow);z-index:200;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.nav-dots{position:fixed;right:28px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;z-index:200}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:var(--text-faint);cursor:pointer;transition:all .4s;border:none;padding:0;opacity:.45}
+.nav-dot:hover{opacity:.85;transform:scale(1.4)}
+.nav-dot.active{background:var(--navy);opacity:1;transform:scale(1.5)}
+.counter{position:fixed;bottom:22px;right:32px;z-index:200;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--text-faint)}
+.timer-hint{position:fixed;bottom:22px;left:32px;z-index:200;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;color:var(--text-faint)}
+.brand{position:fixed;top:18px;left:32px;z-index:200;font-family:'DM Serif Display',serif;font-size:13px;letter-spacing:.32em;color:var(--text-light)}
+
+/* Animations */
+.slide.active .fi{animation:fadeIn .85s ease both}
+.slide.active .fi-1{animation-delay:.12s}
+.slide.active .fi-2{animation-delay:.24s}
+.slide.active .fi-3{animation-delay:.36s}
+.slide.active .fi-4{animation-delay:.48s}
+.slide.active .fi-5{animation-delay:.60s}
+.slide.active .fi-6{animation-delay:.72s}
+.slide.active .fi-7{animation-delay:.84s}
+.slide.active .fi-8{animation-delay:.96s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.slide.active .grow{animation:grow 1.4s cubic-bezier(.3,0,.2,1) .4s both;transform-origin:left center}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.slide.active .grow-up{animation:growUp 1.2s cubic-bezier(.3,0,.2,1) .5s both;transform-origin:bottom}
+@keyframes growUp{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.slide.active .count-in{animation:countIn 1.5s cubic-bezier(.2,0,.2,1) .3s both}
+@keyframes countIn{from{opacity:0;transform:translateY(28px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* Common */
+.tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--yellow-deep);letter-spacing:.32em;font-weight:700;text-transform:uppercase}
+.tag-navy{color:var(--navy)}
+.tag-teal{color:var(--teal)}
+.kicker{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);letter-spacing:.22em;font-weight:600;text-transform:uppercase;margin-bottom:8px}
+.h-line{width:64px;height:2px;background:var(--yellow);margin:28px auto}
+.h-line-left{margin-left:0;margin-right:auto}
+.source{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);letter-spacing:.06em;margin-top:18px}
+
+/* ─────────── SLIDE 1: COVER ─────────── */
+.s-cover{background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 60%,var(--teal) 140%)}
+.s-cover-content{text-align:left;max-width:1000px;width:100%;position:relative;z-index:2;padding:0 4%}
+.s-cover-mark{position:absolute;right:-1%;bottom:-12%;font-family:'DM Serif Display',serif;font-size:clamp(160px,28vw,420px);font-weight:400;color:rgba(244,208,63,.06);line-height:1;letter-spacing:-.04em;user-select:none;pointer-events:none}
+.s-cover h1{font-size:clamp(36px,5.2vw,80px);color:var(--cream);font-weight:700;line-height:1.32;letter-spacing:-.01em;word-break:keep-all;font-family:'Noto Serif JP',serif}
+.s-cover .accent{color:var(--yellow)}
+.s-cover .sub{font-size:clamp(15px,1.5vw,22px);color:var(--teal-pale);line-height:1.85;margin-top:28px;font-weight:300}
+.s-cover .meta{margin-top:48px;display:flex;gap:clamp(20px,3vw,42px);flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:clamp(11px,1vw,13px);color:var(--teal-soft);letter-spacing:.18em}
+.s-cover .meta-sep{color:var(--yellow)}
+.s-cover .circles{position:absolute;top:8%;right:6%;display:flex;flex-direction:column;gap:14px;align-items:flex-end}
+.s-cover .pill{background:var(--yellow);color:var(--navy-deep);padding:8px 18px;border-radius:100px;font-size:13px;font-weight:700;letter-spacing:.06em}
+
+/* ─────────── ROADMAP ─────────── */
+.roadmap{display:grid;grid-template-columns:80px 1fr;gap:0;max-width:880px;margin:32px auto 0;background:var(--paper);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(15,58,74,.04)}
+.rm-row{display:contents}
+.rm-time{padding:18px 16px;background:var(--cream-dark);font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--navy);text-align:center;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;letter-spacing:.04em}
+.rm-content{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;justify-content:center}
+.rm-content h4{font-size:16px;color:var(--text);font-weight:700;margin-bottom:4px;letter-spacing:.01em}
+.rm-content p{font-size:13px;color:var(--text-mid);line-height:1.65}
+.rm-row.highlight .rm-time{background:var(--navy);color:var(--yellow)}
+.rm-row.highlight .rm-content{background:rgba(244,208,63,.05)}
+.rm-row:last-child .rm-time,.rm-row:last-child .rm-content{border-bottom:none}
+
+/* ─────────── BIG QUESTION ─────────── */
+.big-q{text-align:center;max-width:1000px}
+.big-q-eyebrow{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--yellow-deep);letter-spacing:.32em;font-weight:700;margin-bottom:32px;text-transform:uppercase}
+.big-q-main{font-family:'Noto Serif JP',serif;font-size:clamp(28px,4vw,56px);color:var(--text);font-weight:700;line-height:1.5;word-break:keep-all;letter-spacing:-.005em}
+.big-q-main .em{color:var(--navy);position:relative;display:inline-block}
+.big-q-main .em::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:10px;background:var(--yellow);opacity:.45;z-index:-1}
+.big-q-sub{font-size:clamp(16px,1.5vw,22px);color:var(--text-mid);line-height:1.9;margin-top:48px;max-width:720px;margin-left:auto;margin-right:auto}
+.big-q-sub strong{color:var(--text);font-weight:700}
+
+/* ─────────── STAT BIG ─────────── */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;max-width:1100px;width:100%;align-items:center}
+.stat-left{padding-right:24px}
+.stat-eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--yellow-deep);letter-spacing:.28em;font-weight:700;margin-bottom:18px;text-transform:uppercase}
+.stat-title{font-family:'Noto Serif JP',serif;font-size:clamp(26px,3.2vw,44px);color:var(--text);font-weight:700;line-height:1.4;margin-bottom:20px;word-break:keep-all}
+.stat-title .em{color:var(--navy)}
+.stat-body{font-size:clamp(14px,1.2vw,17px);color:var(--text-mid);line-height:1.95}
+.stat-body strong{color:var(--text);font-weight:700}
+.stat-right{position:relative}
+.stat-num{font-family:'DM Serif Display',serif;font-size:clamp(80px,12vw,180px);color:var(--navy);font-weight:400;line-height:.95;letter-spacing:-.04em}
+.stat-num .unit{font-size:.4em;color:var(--teal);font-family:'Noto Serif JP',serif;font-weight:500;margin-left:8px}
+.stat-num.yellow{color:var(--yellow-deep)}
+.stat-delta{font-family:'JetBrains Mono',monospace;font-size:clamp(13px,1.2vw,17px);color:var(--teal);font-weight:700;margin-top:10px;letter-spacing:.06em}
+.stat-delta.down{color:var(--red)}
+
+/* ─────────── CHART: INVESTMENT vs WORKERS ─────────── */
+.chart-box{background:var(--paper);border:1px solid var(--border);border-radius:14px;padding:32px;max-width:1080px;width:100%;box-shadow:0 4px 20px rgba(15,58,74,.04)}
+.chart-title{font-family:'Noto Serif JP',serif;font-size:clamp(20px,2.2vw,30px);color:var(--text);font-weight:700;margin-bottom:6px;letter-spacing:-.005em}
+.chart-sub{font-size:13px;color:var(--text-mid);margin-bottom:24px}
+.chart-svg{width:100%;height:auto;display:block}
+.chart-legend{display:flex;gap:28px;justify-content:center;margin-top:18px;font-size:13px;color:var(--text-mid)}
+.legend-dot{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:8px;vertical-align:middle}
+
+/* ─────────── BAR COMPARE ─────────── */
+.bars{max-width:920px;width:100%;margin:0 auto}
+.bar-row{display:grid;grid-template-columns:200px 1fr 120px;gap:18px;align-items:center;padding:14px 0;border-bottom:1px solid var(--border)}
+.bar-row:last-child{border-bottom:none}
+.bar-label{font-size:15px;font-weight:600;color:var(--text);letter-spacing:.01em}
+.bar-track{height:36px;background:var(--cream-dark);border-radius:6px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:14px;color:#fff;font-weight:700;font-size:13px;letter-spacing:.04em;font-family:'JetBrains Mono',monospace}
+.bar-row.highlight .bar-label{color:var(--navy);font-weight:700}
+.bar-value{font-family:'DM Serif Display',serif;font-size:32px;color:var(--text);font-weight:400;text-align:right}
+.bar-row.highlight .bar-value{color:var(--navy)}
+.bar-row.critical .bar-value{color:var(--red)}
+.bar-row.critical .bar-label{color:var(--red);font-weight:700}
+
+/* ─────────── AGE PYRAMID ─────────── */
+.age-compare{display:grid;grid-template-columns:1fr 1fr;gap:48px;max-width:1100px;width:100%}
+.age-col{text-align:center}
+.age-col-title{font-family:'Noto Serif JP',serif;font-size:20px;color:var(--text);font-weight:700;margin-bottom:24px}
+.age-col-title.focus{color:var(--navy)}
+.age-pyramid{display:flex;flex-direction:column;gap:8px}
+.age-bar{display:grid;grid-template-columns:90px 1fr 70px;gap:14px;align-items:center}
+.age-bar-label{font-size:13px;color:var(--text-mid);text-align:left;font-family:'JetBrains Mono',monospace}
+.age-bar-track{height:30px;background:var(--cream-dark);border-radius:4px;position:relative;overflow:hidden}
+.age-bar-fill{height:100%;background:var(--teal-soft);border-radius:4px}
+.age-col.focus .age-bar-fill.young{background:var(--red)}
+.age-col.focus .age-bar-fill.senior{background:var(--navy)}
+.age-bar-value{font-family:'DM Serif Display',serif;font-size:18px;color:var(--text);text-align:right}
+
+/* ─────────── FUKUOKA MAP ─────────── */
+.fukuoka-grid{display:grid;grid-template-columns:1fr 1fr;gap:42px;max-width:1180px;width:100%;align-items:center}
+.fk-left h2{font-family:'Noto Serif JP',serif;font-size:clamp(26px,2.8vw,40px);color:var(--text);font-weight:700;line-height:1.45;margin-bottom:14px;letter-spacing:-.005em}
+.fk-left .accent{color:var(--navy)}
+.fk-left p{font-size:15px;color:var(--text-mid);line-height:1.9;margin-bottom:14px}
+.fk-left p strong{color:var(--text)}
+.fk-right{position:relative}
+.fk-card{background:var(--paper);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:10px;display:grid;grid-template-columns:1fr 100px 60px;gap:16px;align-items:center;transition:all .3s}
+.fk-card:hover{border-color:var(--navy);transform:translateX(2px)}
+.fk-card.focus{border-color:var(--navy);background:linear-gradient(90deg,rgba(244,208,63,.08) 0%,var(--paper) 60%);border-left:4px solid var(--yellow)}
+.fk-area{font-size:16px;font-weight:700;color:var(--text)}
+.fk-bar{height:8px;background:var(--cream-dark);border-radius:4px;overflow:hidden}
+.fk-bar-fill{height:100%;background:var(--teal);border-radius:4px}
+.fk-card.focus .fk-bar-fill{background:var(--navy)}
+.fk-card.low .fk-bar-fill{background:var(--red)}
+.fk-num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--text);text-align:right;font-weight:400}
+.fk-card.low .fk-num{color:var(--red)}
+.fk-card.focus .fk-num{color:var(--navy)}
+
+/* ─────────── TRANSITION ─────────── */
+.transition{text-align:center;max-width:900px}
+.transition .quote-mark{font-family:'DM Serif Display',serif;font-size:120px;color:var(--yellow);line-height:1;opacity:.4;margin-bottom:-20px}
+.transition h2{font-family:'Noto Serif JP',serif;font-size:clamp(28px,3.8vw,52px);color:var(--text);font-weight:700;line-height:1.5;margin-bottom:36px;word-break:keep-all}
+.transition h2 .em{color:var(--navy);background:linear-gradient(transparent 60%,var(--yellow) 60%);padding:0 4px}
+.transition p{font-size:clamp(16px,1.5vw,22px);color:var(--text-mid);line-height:1.95;max-width:660px;margin:0 auto}
+
+/* ─────────── BEFORE / AFTER ─────────── */
+.ba-grid{display:grid;grid-template-columns:1fr 56px 1fr;gap:0;max-width:1200px;width:100%;align-items:stretch}
+.ba-col{padding:36px 32px;border-radius:16px}
+.ba-before{background:var(--cream-dark);border:1px solid var(--border)}
+.ba-after{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-deep) 100%);color:var(--cream)}
+.ba-arrow{display:flex;align-items:center;justify-content:center;color:var(--yellow-deep);font-size:36px;font-weight:700}
+.ba-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.32em;font-weight:700;margin-bottom:14px;text-transform:uppercase}
+.ba-before .ba-label{color:var(--text-light)}
+.ba-after .ba-label{color:var(--yellow)}
+.ba-title{font-family:'Noto Serif JP',serif;font-size:24px;font-weight:700;line-height:1.4;margin-bottom:18px}
+.ba-before .ba-title{color:var(--text)}
+.ba-after .ba-title{color:var(--cream)}
+.ba-list{list-style:none;padding:0;margin:0}
+.ba-list li{padding:12px 0 12px 28px;font-size:14px;line-height:1.7;position:relative;border-bottom:1px dashed rgba(0,0,0,.08)}
+.ba-after .ba-list li{border-bottom:1px dashed rgba(255,255,255,.12);color:var(--teal-pale)}
+.ba-list li::before{content:'';position:absolute;left:8px;top:18px;width:10px;height:10px;border-radius:50%}
+.ba-before .ba-list li::before{background:var(--text-faint)}
+.ba-after .ba-list li::before{background:var(--yellow)}
+.ba-list li:last-child{border-bottom:none}
+.ba-list li strong{color:var(--text);font-weight:700}
+.ba-after .ba-list li strong{color:var(--cream)}
+
+/* ─────────── KPI CARDS ─────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:1080px;width:100%}
+.kpi-card{background:var(--paper);border:1px solid var(--border);border-radius:14px;padding:28px 24px;text-align:center;border-top:4px solid var(--yellow)}
+.kpi-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-light);letter-spacing:.18em;font-weight:700;text-transform:uppercase;margin-bottom:14px}
+.kpi-before{font-size:14px;color:var(--text-light);text-decoration:line-through;margin-bottom:4px}
+.kpi-after{font-family:'DM Serif Display',serif;font-size:36px;color:var(--navy);font-weight:400;line-height:1.1}
+.kpi-note{font-size:12px;color:var(--text-mid);margin-top:8px;line-height:1.5}
+
+/* ─────────── 3 STEPS ─────────── */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1100px;width:100%;margin-top:28px}
+.step{background:var(--paper);border:1px solid var(--border);border-radius:14px;padding:28px 26px;position:relative;transition:all .3s}
+.step:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(15,58,74,.08)}
+.step-num{font-family:'DM Serif Display',serif;font-size:64px;color:var(--yellow);line-height:1;font-weight:400;margin-bottom:8px}
+.step-title{font-family:'Noto Serif JP',serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:10px;line-height:1.5}
+.step-body{font-size:13px;color:var(--text-mid);line-height:1.75}
+.step-body code{background:var(--cream-dark);padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--navy)}
+.step::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--yellow);border-radius:14px 14px 0 0}
+
+/* ─────────── CLOSING ─────────── */
+.closing{text-align:center;max-width:1000px}
+.closing-eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--yellow-deep);letter-spacing:.32em;font-weight:700;margin-bottom:24px;text-transform:uppercase}
+.closing h1{font-family:'Noto Serif JP',serif;font-size:clamp(32px,4.5vw,68px);color:var(--text);font-weight:700;line-height:1.4;margin-bottom:32px;word-break:keep-all}
+.closing h1 .em{color:var(--navy);background:linear-gradient(transparent 60%,var(--yellow) 60%);padding:0 6px}
+.closing-cta{display:inline-flex;align-items:center;gap:14px;padding:18px 36px;background:var(--navy);color:var(--yellow);border-radius:100px;font-family:'Noto Serif JP',serif;font-size:17px;font-weight:700;letter-spacing:.04em;margin-top:24px}
+.closing-cta-arrow{font-size:22px}
+.closing-meta{margin-top:36px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-light);letter-spacing:.18em}
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="brand">B L A N</div>
+<div class="nav-dots" id="navDots"></div>
+<div class="counter"><span id="curNum">01</span> / <span id="totalNum">12</span></div>
+<div class="timer-hint">15 MIN SEGMENT</div>
+
+<div class="deck">
+
+<!-- ━━━━━━━━━━ 01: COVER ━━━━━━━━━━ -->
+<section class="slide s-cover active" data-index="0">
+  <div class="s-cover-mark">01</div>
+  <div class="circles">
+    <span class="fi pill">採用市場の可視化</span>
+  </div>
+  <div class="s-cover-content">
+    <div class="fi tag" style="color:var(--yellow)">PART · 採用市場の可視化</div>
+    <div class="fi fi-1" style="margin-top:24px"></div>
+    <h1 class="fi fi-1">
+      投資は<span class="accent">伸びている</span>。<br>
+      なのに人が、<span class="accent">いない</span>。
+    </h1>
+    <p class="fi fi-2 sub">
+      建設業の採用市場を、公的データで可視化する15分。<br>
+      その先で、AIが何を変えられるかを、具体的に。
+    </p>
+    <div class="fi fi-3 meta">
+      <span>15 MIN</span>
+      <span class="meta-sep">·</span>
+      <span>第13回 解決市場</span>
+      <span class="meta-sep">·</span>
+      <span>2026.05.28</span>
+      <span class="meta-sep">·</span>
+      <span>BLAN ／ 馬場 理菜子</span>
+    </div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ 02: ROADMAP ━━━━━━━━━━ -->
+<section class="slide" data-index="1" style="background:radial-gradient(ellipse at 20% 30%,rgba(61,133,147,.06) 0%,transparent 50%),var(--cream)">
+  <div style="text-align:center;max-width:920px;width:100%">
+    <div class="fi kicker">— 15 min Roadmap —</div>
+    <div class="fi fi-1 serif" style="font-size:clamp(26px,3.2vw,42px);color:var(--text);font-weight:700;line-height:1.45;margin-bottom:8px">この15分の、<span style="color:var(--navy)">流れ</span></div>
+    <div class="fi fi-2" style="font-size:14px;color:var(--text-mid);line-height:1.85;margin-bottom:8px">数字 → 福岡の実情 → AIで何ができるか。一直線です。</div>
+
+    <div class="fi fi-3 roadmap">
+      <div class="rm-row">
+        <div class="rm-time">0 — 2</div>
+        <div class="rm-content"><h4>つかみ ─ "矛盾" の提示</h4><p>投資は増加、就業者は減少。市場が分裂している。</p></div>
+      </div>
+      <div class="rm-row">
+        <div class="rm-time">2 — 7</div>
+        <div class="rm-content"><h4>全国データ ─ 4つの数字</h4><p>建設投資・就業者・有効求人倍率・年齢構成。</p></div>
+      </div>
+      <div class="rm-row">
+        <div class="rm-time">7 — 9</div>
+        <div class="rm-content"><h4>福岡ズーム</h4><p>1.06倍。地域差0.97〜1.12。隣で起きている数字。</p></div>
+      </div>
+      <div class="rm-row highlight">
+        <div class="rm-time">9 — 13</div>
+        <div class="rm-content"><h4>Before / After ─ AIで何が変わるか</h4><p>競合分析→媒体別最適化→月1更新。5分でやれる仕組み。</p></div>
+      </div>
+      <div class="rm-row">
+        <div class="rm-time">13 — 15</div>
+        <div class="rm-content"><h4>今日から始める3ステップ</h4><p>月3,000円で、明日から動かせる導線。</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ 03: BIG QUESTION ━━━━━━━━━━ -->
+<section class="slide" data-index="2" style="background:radial-gradient(ellipse at 70% 50%,rgba(244,208,63,.08) 0%,transparent 60%),var(--cream)">
+  <div class="big-q">
+    <div class="fi big-q-eyebrow">— Question —</div>
+    <div class="fi fi-1 big-q-main">
+      <span class="em">去年と比べて</span>、<br>
+      御社の求人、<span class="em">何人</span>来ましたか？
+    </div>
+    <p class="fi fi-3 big-q-sub">
+      「採用に困っている」── これは皆さん声を揃えて言う。<br>
+      でも、 <strong>市場の数字</strong> を見て動いている会社は、ほとんどない。
+    </p>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ 04: 建設投資 増加 ━━━━━━━━━━ -->
+<section class="slide" data-index="3" style="background:radial-gradient(ellipse at 80% 80%,rgba(61,133,147,.05) 0%,transparent 50%),var(--cream)">
+  <div class="stat-grid">
+    <div class="stat-left">
+      <div class="fi stat-eyebrow">FACT 01 ／ 建設投資</div>
+      <div class="fi fi-1 stat-title">国の建設投資は、<br><span class="em">むしろ伸びている</span>。</div>
+      <p class="fi fi-2 stat-body">
+        2025年度の建設投資見通しは <strong>75兆5,700億円</strong>。<br>
+        前年度比 <strong>＋3.2%</strong>、政府投資は約25兆円、民間投資は約50兆円。<br>
+        2026年からの「国土強靱化5か年計画」も控え、需要は<strong>確実に増える</strong>。
+      </p>
+      <div class="fi fi-3 source">出典：国土交通省「令和7年度（2025年度）建設投資見通し」2025年8月公表</div>
+    </div>
+    <div class="stat-right">
+      <div class="fi fi-2 count-in stat-num">75.6<span class="unit">兆円</span></div>
+      <div class="fi fi-3 stat-delta">▲ +3.2% YoY ／ 2025年度見通し</div>
+      <div class="fi fi-4" style="margin-top:24px;display:flex;gap:14px">
+        <div style="flex:1;padding:14px;background:var(--paper);border-radius:8px;border:1px solid var(--border)">
+          <div style="font-size:11px;color:var(--text-light);letter-spacing:.1em;font-family:'JetBrains Mono',monospace">政府</div>
+          <div class="serif" style="font-size:22px;color:var(--text);font-weight:700;margin-top:4px">25.2兆円</div>
+        </div>
+        <div style="flex:1;padding:14px;background:var(--paper);border-radius:8px;border:1px solid var(--border)">
+          <div style="font-size:11px;color:var(--text-light);letter-spacing:.1em;font-family:'JetBrains Mono',monospace">民間</div>
+          <div class="serif" style="font-size:22px;color:var(--text);font-weight:700;margin-top:4px">50.4兆円</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ 05: 就業者は減少 ━━━━━━━━━━ -->
+<section class="slide" data-index="4" style="background:radial-gradient(ellipse at 20% 20%,rgba(200,80,60,.05) 0%,transparent 50%),var(--cream)">
+  <div class="chart-box">
+    <div class="fi kicker">FACT 02 ／ 建設業 就業者数の推移</div>
+    <div class="fi fi-1 chart-title">投資は伸びている。<span style="color:var(--red)">人は、減っている。</span></div>
+    <p class="fi fi-2 chart-sub">1997年のピーク 685万人 → 2025年 478万人。約 <strong>30% 減少</strong>。</p>
+
+    <svg class="fi fi-3 chart-svg" viewBox="0 0 1000 360" xmlns="http://www.w3.org/2000/svg">
+      <!-- Grid -->
+      <line x1="80" y1="40" x2="80" y2="300" stroke="#d8d2c4" stroke-width="1"/>
+      <line x1="80" y1="300" x2="960" y2="300" stroke="#d8d2c4" stroke-width="1"/>
+      <line x1="80" y1="100" x2="960" y2="100" stroke="#eee8db" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="80" y1="160" x2="960" y2="160" stroke="#eee8db" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="80" y1="220" x2="960" y2="220" stroke="#eee8db" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <!-- Y axis labels -->
+      <text x="70" y="44" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#7a8892">700万</text>
+      <text x="70" y="104" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#7a8892">600万</text>
+      <text x="70" y="164" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#7a8892">500万</text>
+      <text x="70" y="224" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#7a8892">400万</text>
+      <text x="70" y="304" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#7a8892">0</text>
+
+      <!-- 投資 trend line (rising) - simplified illustrative -->
+      <path d="M 120 220 Q 350 230, 500 200 T 920 130" fill="none" stroke="#3d8593" stroke-width="2.5" stroke-dasharray="6,4" opacity="0.7"/>
+      <circle cx="120" cy="220" r="4" fill="#3d8593"/>
+      <circle cx="920" cy="130" r="4" fill="#3d8593"/>
+      <text x="920" y="118" font-family="JetBrains Mono,monospace" font-size="11" fill="#3d8593" text-anchor="end" font-weight="700">建設投資（指数）↑</text>
+
+      <!-- 就業者数 area chart -->
+      <defs>
+        <linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0f3a4a" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="#0f3a4a" stop-opacity="0.05"/>
+        </linearGradient>
+      </defs>
+      <path d="M 120 41 L 200 49 L 280 70 L 360 105 L 440 145 L 520 168 L 600 175 L 680 178 L 760 175 L 840 178 L 920 184 L 920 300 L 120 300 Z" fill="url(#grad1)"/>
+      <path d="M 120 41 L 200 49 L 280 70 L 360 105 L 440 145 L 520 168 L 600 175 L 680 178 L 760 175 L 840 178 L 920 184" fill="none" stroke="#0f3a4a" stroke-width="3"/>
+
+      <!-- Data point: 1997 peak -->
+      <circle cx="120" cy="41" r="6" fill="#c8503c"/>
+      <text x="130" y="35" font-family="DM Serif Display,serif" font-size="16" fill="#0f3a4a" font-weight="700">685万人</text>
+      <text x="120" y="320" font-family="JetBrains Mono,monospace" font-size="11" fill="#7a8892" text-anchor="middle">1997</text>
+
+      <!-- Data point: 2025 -->
+      <circle cx="920" cy="184" r="6" fill="#c8503c"/>
+      <text x="910" y="178" font-family="DM Serif Display,serif" font-size="16" fill="#c8503c" font-weight="700" text-anchor="end">478万人</text>
+      <text x="920" y="320" font-family="JetBrains Mono,monospace" font-size="11" fill="#7a8892" text-anchor="middle">2025</text>
+
+      <!-- Mid markers -->
+      <text x="370" y="320" font-family="JetBrains Mono,monospace" font-size="11" fill="#7a8892" text-anchor="middle">2005</text>
+      <text x="620" y="320" font-family="JetBrains Mono,monospace" font-size="11" fill="#7a8892" text-anchor="middle">2015</text>
+
+      <!-- Annotation arrow -->
+      <text x="500" y="50" font-family="Noto Serif JP,serif" font-size="14" fill="#c8503c" font-weight="700" text-anchor="middle">─ 30%</text>
+    </svg>
+
+    <div class="chart-legend">
+      <span><span class="legend-dot" style="background:#0f3a4a"></span>建設業 就業者数（万人）</span>
+      <span><span class="legend-dot" style="background:#3d8593"></span>建設投資（参考、増加トレンド）</span>
+    </div>
+    <div class="source">出典：総務省「労働力調査」／ 国土交通省「最近の建設業を巡る状況」</div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ 06: 有効求人倍率 BAR ━━━━━━━━━━ -->
+<section class="slide" data-index="5" style="background:radial-gradient(ellipse at 50% 80%,rgba(244,208,63,.06) 0%,transparent 50%),var(--cream)">
+  <div style="max-width:1100px;width:100%">
+    <div class="fi" style="text-align:center;margin-bottom:28px">
+      <div class="kicker">FACT 03 ／ 有効求人倍率</div>
+      <div class="serif" style="font-size:clamp(24px,3vw,40px);color:var(--text);font-weight:700;line-height:1.45;margin-top:6px">建設業の有効求人倍率は、<span style="color:var(--navy);background:linear-gradient(transparent 60%,var(--yellow) 60%);padding:0 4px">全産業の4倍超</span>。</div>
+    </div>
+
+    <div class="fi fi-2 bars">
+      <div class="bar-row">
+        <div class="bar-label">全産業 平均</div>
+        <div class="bar-track"><div class="bar-fill grow" style="background:var(--teal-soft);width:11.8%">1.18倍</div></div>
+        <div class="bar-value">1.18×</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">全産業 正社員</div>
+        <div class="bar-track"><div class="bar-fill grow" style="background:var(--teal);width:9.9%">0.99倍</div></div>
+        <div class="bar-value">0.99×</div>
+      </div>
+      <div class="bar-row highlight">
+        <div class="bar-label">建設業 全体</div>
+        <div class="bar-track"><div class="bar-fill grow" style="background:var(--navy);width:51.8%">5.18倍</div></div>
+        <div class="bar-value">5.18×</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">土木 の職業</div>
+        <div class="bar-track"><div class="bar-fill grow" style="background:var(--navy-deep);width:63.3%">6.33倍</div></div>
+        <div class="bar-value">6.33×</div>
+      </div>
+      <div class="bar-row critical">
+        <div class="bar-label">建設躯体工事 従事者</div>
+        <div class="bar-track"><div class="bar-fill grow" style="background:var(--red);width:74.8%">7.48倍</div></div>
+        <div class="bar-value">7.48×</div>
+      </div>
+    </div>
+
+    <div class="fi fi-3" style="text-align:center;margin-top:24px;font-size:14px;color:var(--text-mid);line-height:1.85">
+      躯体工事に至っては、求職者1人に求人が <strong>7件以上</strong>。完全な「奪い合い」相場。
+    </div>
+    <div class="source" style="text-align:center">出典：厚生労働省「一般職業紹介状況」令和8年1月分（2026年3月公表）／ 令和7年10月分（建設業5.18倍）</div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ 07: 年齢構成 ━━━━━━━━━━ -->
+<section class="slide" data-index="6" style="background:radial-gradient(ellipse at 80% 20%,rgba(15,58,74,.04) 0%,transparent 50%),var(--cream)">
+  <div style="max-width:1180px;width:100%">
+    <div class="fi" style="text-align:center;margin-bottom:36px">
+      <div class="kicker">FACT 04 ／ 年齢構成</div>
+      <div class="serif" style="font-size:clamp(24px,2.8vw,38px);color:var(--text);font-weight:700;line-height:1.45;margin-top:6px">10年後、就業者の<span style="color:var(--red);background:linear-gradient(transparent 60%,var(--yellow-soft) 60%);padding:0 4px">3人に1人が引退</span>する。</div>
+    </div>
+
+    <div class="fi fi-2 age-compare">
+      <div class="age-col">
+        <div class="age-col-title">全産業</div>
+        <div class="age-pyramid">
+          <div class="age-bar"><div class="age-bar-label">29歳以下</div><div class="age-bar-track"><div class="age-bar-fill" style="width:50%"></div></div><div class="age-bar-value">16.4%</div></div>
+          <div class="age-bar"><div class="age-bar-label">30〜54歳</div><div class="age-bar-track"><div class="age-bar-fill" style="width:80%"></div></div><div class="age-bar-value">52.1%</div></div>
+          <div class="age-bar"><div class="age-bar-label">55歳以上</div><div class="age-bar-track"><div class="age-bar-fill" style="width:62%"></div></div><div class="age-bar-value">31.5%</div></div>
+        </div>
+      </div>
+      <div class="age-col focus">
+        <div class="age-col-title focus">建設業</div>
+        <div class="age-pyramid">
+          <div class="age-bar"><div class="age-bar-label">29歳以下</div><div class="age-bar-track"><div class="age-bar-fill young" style="width:35%"></div></div><div class="age-bar-value" style="color:var(--red)">11.7%</div></div>
+          <div class="age-bar"><div class="age-bar-label">30〜54歳</div><div class="age-bar-track"><div class="age-bar-fill" style="width:75%;background:var(--teal)"></div></div><div class="age-bar-value">52.4%</div></div>
+          <div class="age-bar"><div class="age-bar-label">55歳以上</div><div class="age-bar-track"><div class="age-bar-fill senior" style="width:72%"></div></div><div class="age-bar-value" style="color:var(--navy)">35.9%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fi fi-3" style="text-align:center;margin-top:32px;font-size:15px;color:var(--text-mid);line-height:1.9;max-width:780px;margin-left:auto;margin-right:auto">
+      若手 <strong style="color:var(--red)">11.7%</strong> ─ ベテラン <strong style="color:var(--navy)">35.9%</strong>。<br>
+      この偏りが、<strong>採用 × 技術継承</strong> の二重課題を生んでいる。
+    </div>
+    <div class="source" style="text-align:center">出典：国土交通省「最近の建設業を巡る状況について」</div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ 08: 福岡ズーム ━━━━━━━━━━ -->
+<section class="slide" data-index="7" style="background:radial-gradient(ellipse at 15% 50%,rgba(61,133,147,.06) 0%,transparent 50%),var(--cream)">
+  <div class="fukuoka-grid">
+    <div class="fk-left">
+      <div class="fi kicker">— Zoom in ／ 福岡 —</div>
+      <h2 class="fi fi-1">隣で起きている、<br>もうひとつの<span class="accent">数字</span>。</h2>
+      <p class="fi fi-2">
+        福岡県全体の有効求人倍率は <strong>1.06倍</strong>（2026年2月）。<br>
+        全国平均（1.18倍）を <strong>下回り</strong>始めている。
+      </p>
+      <p class="fi fi-3">
+        ただし、地域差は拡大中。<br>
+        北九州・筑豊は <strong style="color:var(--red)">1倍を割り込む</strong>。<br>
+        建設業は産業別では <strong style="color:var(--navy)">なお増加傾向</strong>。
+      </p>
+      <p class="fi fi-4" style="margin-top:20px;font-size:14px;color:var(--text);line-height:1.85;padding:14px 18px;background:rgba(244,208,63,.12);border-left:3px solid var(--yellow);border-radius:0 8px 8px 0">
+        全国の <strong>「採用難」</strong> と、福岡の <strong>「求職者やや余り」</strong> ── <br>このギャップに、 <strong>採用の余地</strong> が眠っている。
+      </p>
+    </div>
+    <div class="fk-right">
+      <div class="fi fi-3 fk-card focus">
+        <div class="fk-area">福岡 地域</div>
+        <div class="fk-bar"><div class="fk-bar-fill grow" style="width:90%"></div></div>
+        <div class="fk-num">1.12</div>
+      </div>
+      <div class="fi fi-4 fk-card">
+        <div class="fk-area">筑後 地域</div>
+        <div class="fk-bar"><div class="fk-bar-fill grow" style="width:90%"></div></div>
+        <div class="fk-num">1.12</div>
+      </div>
+      <div class="fi fi-5 fk-card low">
+        <div class="fk-area">筑豊 地域</div>
+        <div class="fk-bar"><div class="fk-bar-fill grow" style="width:78%"></div></div>
+        <div class="fk-num">0.98</div>
+      </div>
+      <div class="fi fi-6 fk-card low">
+        <div class="fk-area">北九州 地域</div>
+        <div class="fk-bar"><div class="fk-bar-fill grow" style="width:77%"></div></div>
+        <div class="fk-num">0.97</div>
+      </div>
+      <div class="source" style="margin-top:14px">出典：福岡労働局／リージョナルキャリア福岡 定点観測（2026年2月時点）</div>
+    </div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ 09: TRANSITION ━━━━━━━━━━ -->
+<section class="slide" data-index="8" style="background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 100%);color:var(--cream)">
+  <div class="transition" style="color:var(--cream)">
+    <div class="fi quote-mark">"</div>
+    <h2 class="fi fi-1" style="color:var(--cream)">
+      ここまでの数字は、<br>
+      きっと <span class="em">何度も見た</span> ものです。
+    </h2>
+    <p class="fi fi-3" style="color:var(--teal-pale);max-width:700px;margin:0 auto">
+      問題は、その先。<br>
+      <strong style="color:var(--yellow)">「で、うちは何をすればいいのか」</strong> ──<br>
+      ここから、AIが入る余地があります。
+    </p>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ 10: BEFORE / AFTER ━━━━━━━━━━ -->
+<section class="slide" data-index="9" style="background:radial-gradient(ellipse at 50% 30%,rgba(244,208,63,.08) 0%,transparent 60%),var(--cream)">
+  <div style="max-width:1240px;width:100%">
+    <div class="fi" style="text-align:center;margin-bottom:28px">
+      <div class="kicker">— Before / After —</div>
+      <div class="serif" style="font-size:clamp(22px,2.6vw,36px);color:var(--text);font-weight:700;line-height:1.45;margin-top:6px">「求人を出す」が、<span style="color:var(--navy);background:linear-gradient(transparent 60%,var(--yellow) 60%);padding:0 4px">こう変わる</span>。</div>
+    </div>
+
+    <div class="fi fi-2 ba-grid">
+      <div class="ba-col ba-before">
+        <div class="ba-label">— Before ／ 多くの会社の今</div>
+        <div class="ba-title">ハローワークに1枚、<br>"いつものやつ"。</div>
+        <ul class="ba-list">
+          <li>媒体は <strong>ハローワークのみ</strong>。年に1〜2回更新</li>
+          <li>文面は <strong>「経験者優遇」「社保完備」</strong>。10年変えていない</li>
+          <li>競合他社の求人を <strong>見たことがない</strong></li>
+          <li>賃金は <strong>地域相場のなんとなく</strong>。社員にも説明できない</li>
+          <li>反響 <strong>月0〜1件</strong>。来ないのは「景気のせい」と諦め</li>
+        </ul>
+      </div>
+      <div class="ba-arrow fi fi-3">→</div>
+      <div class="ba-col ba-after">
+        <div class="ba-label">— After ／ AIで5分</div>
+        <div class="ba-title">競合の動きを見て、<br>媒体別に最適化。</div>
+        <ul class="ba-list">
+          <li>競合10社の求人をAIが <strong>30秒で比較</strong>。賃金・福利厚生・訴求点をマトリクス化</li>
+          <li>自社の <strong>独自の強み3つ</strong> を抽出（賞与3.5ヶ月／資格手当／若手登用率）</li>
+          <li>媒体別に書き分け：<strong>ハローワーク・Indeed・SNS</strong> で文体最適化</li>
+          <li>年代別ターゲティング：<strong>20代成長／30代安定／50代技術</strong> で3パターン</li>
+          <li>月1回、競合の変化を見て <strong>自動でアップデート</strong></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ 11: KPI ━━━━━━━━━━ -->
+<section class="slide" data-index="10" style="background:radial-gradient(ellipse at 50% 70%,rgba(61,133,147,.06) 0%,transparent 50%),var(--cream)">
+  <div style="max-width:1100px;width:100%">
+    <div class="fi" style="text-align:center;margin-bottom:32px">
+      <div class="kicker">— Outcome Image —</div>
+      <div class="serif" style="font-size:clamp(24px,2.8vw,38px);color:var(--text);font-weight:700;line-height:1.45;margin-top:6px">数字でいうと、<span style="color:var(--navy)">こうなります</span>。</div>
+      <div style="font-size:13px;color:var(--text-mid);margin-top:8px">※ BLAN伴走先 3社平均（建設・製造・農業法人）</div>
+    </div>
+
+    <div class="fi fi-2 kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">求人票 作成時間</div>
+        <div class="kpi-before">3〜5時間 / 媒体</div>
+        <div class="kpi-after">約 20分</div>
+        <div class="kpi-note">3パターン同時生成・媒体別出力込み</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">月あたり 応募数</div>
+        <div class="kpi-before">0〜1 件 / 月</div>
+        <div class="kpi-after">3〜5 件 / 月</div>
+        <div class="kpi-note">同一媒体・同一予算で観測</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">採用関連 月額コスト</div>
+        <div class="kpi-before">媒体料 5〜10万円</div>
+        <div class="kpi-after">AI ¥3,000 〜</div>
+        <div class="kpi-note">既存媒体は併用、効果に応じ最適化</div>
+      </div>
+    </div>
+
+    <div class="fi fi-4" style="text-align:center;margin-top:32px;font-size:14px;color:var(--text-mid);line-height:1.85;max-width:680px;margin-left:auto;margin-right:auto">
+      <strong>「AI＝先進的な何か」</strong> ではなく、<br>
+      <strong style="color:var(--navy)">採用担当の"目と手"を増やす道具</strong> として効きます。
+    </div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━ 12: 3 STEPS / CLOSING ━━━━━━━━━━ -->
+<section class="slide" data-index="11" style="background:radial-gradient(ellipse at 80% 80%,rgba(244,208,63,.08) 0%,transparent 50%),var(--cream)">
+  <div class="closing">
+    <div class="fi closing-eyebrow">— Today, 3 Steps —</div>
+    <h1 class="fi fi-1">明日から始める、<span class="em">3ステップ</span>。</h1>
+
+    <div class="fi fi-2 steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Claudeを契約する</div>
+        <div class="step-body">
+          <code>claude.ai</code> で月額プラン契約。<br>
+          1ID <code>¥3,000/月</code> 程度。クレカ登録だけで完了。
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">競合5社の求人URLを集める</div>
+        <div class="step-body">
+          ハローワークインターネット・Indeedで、<br>
+          自社の地域・職種で出てくる <strong>同業5社</strong> をピックアップ。
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">AIに頼む、それだけ</div>
+        <div class="step-body">
+          「この5社を比較して、<br>
+          うちの強みを抽出。<strong>年代別に3パターン</strong> 作って」── これだけ。
+        </div>
+      </div>
+    </div>
+
+    <div class="fi fi-5 closing-cta">
+      <span>続きはブースで実演中。先着10名、60分無料相談</span>
+      <span class="closing-cta-arrow">→</span>
+    </div>
+
+    <div class="fi fi-6 closing-meta">BLAN ／ 馬場 理菜子 ／ blan-ai.jp ／ rinako@blan-ai.jp</div>
+  </div>
+</section>
+
+</div>
+
+<script>
+var slides=document.querySelectorAll('.slide');
+var total=slides.length;
+var current=0;
+var animating=false;
+document.getElementById('totalNum').textContent=String(total).padStart(2,'0');
+
+var dotsEl=document.getElementById('navDots');
+slides.forEach(function(_,i){
+  var d=document.createElement('button');
+  d.className='nav-dot'+(i===0?' active':'');
+  d.addEventListener('click',function(){goTo(i)});
+  dotsEl.appendChild(d);
+});
+
+function updateUI(){
+  document.getElementById('progress').style.width=((current+1)/total*100)+'%';
+  document.getElementById('curNum').textContent=String(current+1).padStart(2,'0');
+  document.querySelectorAll('.nav-dot').forEach(function(d,i){d.classList.toggle('active',i===current)});
+}
+
+function goTo(idx){
+  if(animating||idx===current||idx<0||idx>=total)return;
+  animating=true;
+  var prev=slides[current],next=slides[idx];
+  prev.classList.remove('active');
+  prev.classList.add('exit-up');
+  next.classList.add('active');
+  current=idx;
+  updateUI();
+  setTimeout(function(){prev.classList.remove('exit-up');animating=false},900);
+}
+
+document.addEventListener('keydown',function(e){
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();goTo(current+1)}
+  else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();goTo(current-1)}
+  else if(e.key==='Home'){e.preventDefault();goTo(0)}
+  else if(e.key==='End'){e.preventDefault();goTo(total-1)}
+});
+
+function isMobile(){return window.innerWidth<=768}
+document.addEventListener('click',function(e){
+  if(isMobile())return;
+  if(e.target.closest('.nav-dots')||e.target.closest('a'))return;
+  if(e.clientX>window.innerWidth*0.5)goTo(current+1);
+  else goTo(current-1);
+});
+
+updateUI();
+</script>
+</body>
+</html>
