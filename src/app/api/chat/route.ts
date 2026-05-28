@@ -41,6 +41,17 @@ export async function POST(req: NextRequest) {
 
   // システムプロンプト構築 (ライブ補正 + RAG コンテキストを追記)
   let systemPrompt = config.systemPrompt;
+  // living-manual: 「マニュアル本体」「追記ログ」の日付に本日 (JST) を使わせるため、現在日付を先頭注入
+  // Claude API は現在日付を知らないため、明示しないと推測で過去日付 (例: 2025-01-23) を出してしまう
+  if (demoKey === "living-manual") {
+    const today = new Date().toLocaleDateString("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).replace(/\//g, "-"); // "2026/05/25" → "2026-05-25"
+    systemPrompt = `現在日付 (JST、本日): ${today}\n出力中の「最終更新」「追記ログの日付」「マニュアル v1/v2 本体内の日付」はすべてこの日付を使うこと。プロンプト内サンプル (例: 2026-05-28) は形式の参考であって、実際の出力には必ず上記の本日日付を使う。\n\n${systemPrompt}`;
+  }
   if (knowledgeContext && knowledgeContext.trim()) {
     // 会社固有のナレッジを system に prepend (200K context のうち最大 ~50K 字を限度に切詰め)
     const truncated = knowledgeContext.slice(0, 50000);

@@ -26,7 +26,7 @@ export interface DiagnosisResult {
   recommendedDemos: DemoKey[];
 }
 
-// 8 デモ
+// 8 デモ + セミナー専用 1 デモ
 export type DemoKey =
   | "senpai-wanko" // ① 先輩わんこ
   | "contract-risk" // ② 契約書リスクチェック
@@ -35,7 +35,8 @@ export type DemoKey =
   | "shipping-flow" // ⑤ 出荷業務 一気通貫
   | "skill-growth" // ⑥ AI スキル成長プラン
   | "property-copy" // A. 物件広告コピー量産
-  | "explanation-risk"; // B. 重説リスクチェック
+  | "explanation-risk" // B. 重説リスクチェック
+  | "living-manual"; // セミナー専用: 生きるマニュアル (DEMO_KEYS には載せない=来場者一覧から非表示)
 
 // 動物 → 担当デモのマッピング
 export const ANIMAL_TO_DEMOS: Record<AnimalKey, DemoKey[]> = {

@@ -86,6 +86,16 @@ export const DEMOS: Record<DemoKey, Demo> = {
     担当動物: "owl",
     カテゴリ: "デモ",
   },
+  // セミナー専用デモ (DEMO_KEYS には登録しない = 来場者一覧から非表示。/demos/living-manual に直 URL でアクセス)
+  "living-manual": {
+    key: "living-manual",
+    number: "セ",
+    name: "BLAN式 生きるマニュアル",
+    oneLineSummary: "ベテランの違和感と新人の気づきが対話で交差し、マニュアルが育つ瞬間を体験",
+    description: "セミナー専用デモ。題材を選び、新人の困りごとから初版マニュアルを生成 → ベテランからの違和感を反映して v2/v3 へ更新 → 履歴は追記ログに別ブロックで残す、二層構造のナラティブ共創",
+    担当動物: "lion",
+    カテゴリ: "シミュレーション",
+  },
 };
 
 export const DEMO_KEYS: DemoKey[] = [
