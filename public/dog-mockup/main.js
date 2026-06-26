@@ -392,6 +392,13 @@ window.addEventListener('message', (e) => {
   } else if (e.data.type === 'blan-lipsync-stop') {
     externalLipAmp = 0;
     externalLipUntil = 0;
+  } else if (e.data.type === 'blan-set-stage') {
+    // 親フレーム (例: /pitch ピッチデモ) から進化を指示する。
+    // greet:false で犬が自前の音声を鳴らさない (親側 TTS と二重発話を防ぐ)。
+    const key = e.data.stage;
+    if (key && STAGES[key]) {
+      try { setStage(key, { greet: false }); } catch (err) { console.warn('[blan-set-stage]', err); }
+    }
   }
 });
 
