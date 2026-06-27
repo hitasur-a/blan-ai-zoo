@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>うちのわんこ、企業秘密です — BLAN / 福岡よかとこBPC2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#faf6ee; --ink:#2b2622; --sub:#6f655c;
+    --orange:#fb6103; --orange-soft:#ffe7d4; --line:#e7ddcf; --card:#fffdf8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#2b2622;font-family:"Noto Sans JP",sans-serif;color:var(--ink);overflow:hidden}
+  .display{font-family:"Zen Kaku Gothic New","Noto Sans JP",sans-serif}
+
+  .deck{position:fixed;inset:0}
+  .slide{
+    position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+    padding:7vh 8vw;background:var(--paper);opacity:0;visibility:hidden;transition:opacity .5s ease;
+  }
+  .slide.active{opacity:1;visibility:visible}
+  .slide::before{content:"";position:absolute;right:-8%;top:-12%;width:46%;height:46%;
+    background:radial-gradient(closest-side,rgba(251,97,3,.10),transparent);pointer-events:none}
+  .slide::after{content:"";position:absolute;left:-6%;bottom:-14%;width:40%;height:40%;
+    background:radial-gradient(closest-side,rgba(251,97,3,.06),transparent);pointer-events:none}
+
+  .slide.active [data-in]{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+  .slide.active [data-in="2"]{animation-delay:.10s}
+  .slide.active [data-in="3"]{animation-delay:.20s}
+  .slide.active [data-in="4"]{animation-delay:.32s}
+  .slide.active [data-in="5"]{animation-delay:.44s}
+  .slide.active [data-in="6"]{animation-delay:.56s}
+  @keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+
+  .eyebrow{font-size:1.5rem;letter-spacing:.2em;color:var(--orange);font-weight:700}
+  .kicker{display:inline-block;background:var(--orange-soft);color:#b8460a;font-weight:700;
+    font-size:.82rem;letter-spacing:.12em;padding:.4em 1em;border-radius:999px;align-self:flex-start}
+  .h2{font-size:clamp(1.8rem,4.4vw,3.2rem);font-weight:900;line-height:1.25;margin-top:1rem}
+  .h2 .accent{color:var(--orange)}
+  .lead2{font-size:clamp(1.05rem,2.2vw,1.5rem);color:var(--sub);font-weight:700;line-height:1.7;margin-top:1.1rem}
+  .lead2 .hl{color:var(--ink)}
+
+  /* S1 */
+  .title{font-size:clamp(2.6rem,7vw,6rem);font-weight:900;line-height:1.08}
+  .title .accent{color:var(--orange)}
+  .subtitle{margin-top:1.4rem;font-size:clamp(1.05rem,2.3vw,1.7rem);font-weight:700;color:var(--sub);letter-spacing:.04em}
+  .meta{margin-top:3rem;display:flex;gap:1.4rem;flex-wrap:wrap;align-items:center;color:var(--sub);font-size:1rem}
+  .meta b{color:inherit;font-weight:700} .meta .dot{width:5px;height:5px;border-radius:50%;background:var(--line)}
+
+  /* S2 */
+  .lead{font-size:clamp(1.6rem,4vw,3rem);font-weight:900;line-height:1.5}
+  .lead .u{background:linear-gradient(transparent 62%,var(--orange-soft) 62%);padding:0 .1em}
+  .mails{display:flex;gap:14px;margin:2.4rem 0 1.2rem;flex-wrap:wrap}
+  .mail{width:108px;height:72px;border:2px solid var(--line);border-radius:10px;background:#fff;position:relative}
+  .mail span{position:absolute;left:10px;right:10px;bottom:10px;height:7px;border-radius:4px;background:#efe7da}
+  .mail span:nth-child(2){bottom:22px;right:34px}
+  .slide.active .mail{animation:pop .5s both}
+  .slide.active .mail:nth-child(2){animation-delay:.1s}.slide.active .mail:nth-child(3){animation-delay:.2s}
+  .slide.active .mail:nth-child(4){animation-delay:.3s}.slide.active .mail:nth-child(5){animation-delay:.4s}
+  @keyframes pop{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+  .punch{font-size:clamp(1.3rem,3vw,2.1rem);font-weight:900}.punch .accent{color:var(--orange)}
+
+  /* S3 */
+  .insight-wrap{text-align:center}
+  .slogan{font-size:clamp(2.4rem,6.4vw,5.4rem);font-weight:900;line-height:1.18}
+  .slogan .accent{color:var(--orange)}
+  .slide.active .slogan .reveal{display:inline-block;animation:revv .8s cubic-bezier(.2,.7,.2,1) both}
+  .slide.active .slogan .reveal.b{animation-delay:.28s}
+  @keyframes revv{from{opacity:0;transform:translateY(28px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+  .insight-sub{margin-top:2.2rem;font-size:clamp(1.05rem,2.4vw,1.6rem);font-weight:700;color:var(--sub);line-height:1.7}
+  .insight-sub .hl{color:var(--ink)}
+
+  /* カード（課題） */
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:2.4rem}
+  .card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:1.8rem 1.6rem;
+    box-shadow:0 14px 30px rgba(0,0,0,.04)}
+  .cardfig{position:absolute;top:1.4rem;right:1.4rem;opacity:.85}
+  .cardfig svg{width:46px;height:46px}
+  .card .no{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;
+    background:var(--orange);color:#fff;font-weight:900;font-family:"Zen Kaku Gothic New";font-size:1.2rem}
+  .card h3{font-size:1.15rem;font-weight:900;margin:1rem 0 .6rem;line-height:1.4}
+  .card p{font-size:.95rem;color:var(--sub);line-height:1.7}
+  .card .stat{color:var(--orange);font-weight:900}
+
+  /* 解決 3つ同時 */
+  .triple{display:flex;gap:1rem;margin-top:2rem;flex-wrap:wrap}
+  .chip{background:var(--orange-soft);color:#b8460a;font-weight:900;border-radius:999px;padding:.7em 1.4em;font-size:1.05rem}
+
+  /* 実機デバイス */
+  .device-wrap{display:flex;gap:3vw;align-items:center;margin-top:1.5rem;flex-wrap:wrap}
+  .device{width:360px;flex:0 0 auto;border-radius:26px;background:#1f1b18;padding:14px;box-shadow:0 24px 50px rgba(0,0,0,.22)}
+  .screen{border-radius:16px;overflow:hidden;background:var(--paper);height:440px;display:flex;flex-direction:column}
+  .scr-dog{flex:1;background:radial-gradient(120% 80% at 50% 35%,#fff,#f1e7d6);position:relative;display:flex;align-items:center;justify-content:center}
+  .scr-dog .emoji{font-size:112px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.12));animation:bob 2.6s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .bubble{position:absolute;top:18px;right:14px;left:80px;background:#fff;border-radius:14px;padding:10px 12px;font-size:.78rem;font-weight:700;box-shadow:0 6px 14px rgba(0,0,0,.08)}
+  .bubble b{color:var(--orange)}
+  .scr-bar{background:#fff;padding:10px 12px;border-top:1px solid var(--line);font-size:.72rem;color:var(--sub)}
+  .device-copy{flex:0 0 auto;max-width:720px;min-width:280px}
+  .flow{display:flex;align-items:center;justify-content:center;gap:.7rem;flex-wrap:nowrap;margin-top:1.2rem;font-weight:900;font-size:1.4rem;white-space:nowrap}
+  .flow .step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:.6em 1.1em}
+  .flow .arrow{color:var(--orange)}
+  .note{margin-top:1.2rem;font-size:.85rem;color:var(--sub)}
+
+  /* 3層 収益モデル（フラット3カード） */
+  .tier3{display:flex;align-items:stretch;gap:1.1rem;margin-top:2.6rem}
+  .tcard{flex:1;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:1.9rem 1.7rem;box-shadow:0 12px 28px rgba(0,0,0,.05);display:flex;flex-direction:column}
+  .tcard.lead{background:#fff8f1;border-color:#f7caa3}
+  .tcard .tlv{font-weight:700;color:var(--orange);font-size:.95rem;letter-spacing:.12em}
+  .tcard .tnm{font-weight:900;font-size:1.5rem;margin:.4rem 0 .6rem}
+  .tcard .tpr{font-family:"Zen Kaku Gothic New";font-weight:900;font-size:2rem;color:var(--ink);line-height:1.15}
+  .tcard .tds{font-size:.92rem;color:var(--sub);margin-top:.8rem;line-height:1.6}
+  .tarrow{display:flex;align-items:center;font-size:1.8rem;color:var(--orange);font-weight:900;flex:0 0 auto}
+
+  /* なぜ私 */
+  .why{display:grid;grid-template-columns:1.1fr .9fr;gap:2.4rem;margin-top:1.6rem;align-items:center}
+  .points{list-style:none;display:flex;flex-direction:column;gap:1rem}
+  .points li{display:flex;gap:.9rem;font-size:1.05rem;font-weight:700;line-height:1.5}
+  .points li b{color:var(--orange);font-family:"Zen Kaku Gothic New"}
+  .quote{background:var(--card);border-left:5px solid var(--orange);border-radius:0 16px 16px 0;padding:1.8rem;
+    font-size:clamp(1.2rem,2.4vw,1.7rem);font-weight:900;line-height:1.6}
+  .proof{margin-top:1.4rem;font-size:.9rem;color:var(--sub);line-height:1.7}
+  .proof b{color:var(--ink)}
+
+  /* 市場 2x2 グリッド */
+  .mtop-h{font-family:"Zen Kaku Gothic New";font-weight:900;font-size:clamp(1.8rem,4vw,2.6rem)}
+  .mtop-sub{margin-top:.7rem;font-size:1.05rem;color:var(--sub);font-weight:700;line-height:1.7}
+  .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;margin-top:1.8rem;max-width:1040px}
+  .mcard{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:1.6rem 2rem;box-shadow:0 12px 28px rgba(0,0,0,.05)}
+  .mcard .cap{font-size:.98rem;color:var(--sub);font-weight:700}
+  .mcard .num{margin-top:.5rem;font-weight:700;font-size:1.5rem;color:var(--sub)}
+  .mcard .num b{font-family:"Zen Kaku Gothic New";font-weight:900;font-size:3.4rem;color:var(--ink);margin:0 .12em;vertical-align:-.04em}
+  .mcard.som{background:#fff8f1;border-color:#f7caa3}
+  .mcard.som .num b{color:var(--orange)}
+
+  /* ロードマップ */
+  .timeline{margin-top:2rem;display:flex;flex-direction:column;gap:0}
+  .tl{display:flex;gap:1.4rem;padding:1rem 0;border-left:3px solid var(--line);margin-left:8px;padding-left:1.6rem;position:relative}
+  .tl::before{content:"";position:absolute;left:-9px;top:1.5rem;width:15px;height:15px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 4px var(--paper)}
+  .tl .when{font-weight:900;color:var(--orange);width:160px;flex:0 0 auto;font-size:1.25rem}
+  .tl .what{font-weight:700;line-height:1.6;font-size:1.4rem}
+
+  /* 締め */
+  .closing{text-align:center}
+  .closing .big{font-size:clamp(2rem,5vw,4rem);font-weight:900;line-height:1.25}
+  .closing .big .accent{color:var(--orange)}
+  .closing .sub{margin-top:1.6rem;font-size:clamp(1rem,2.2vw,1.4rem);color:var(--sub);font-weight:700;line-height:1.8}
+  .contact{margin-top:2.6rem;font-size:1rem;color:var(--sub)}.contact b{color:inherit;font-weight:700}
+
+  /* HUD */
+  .hud{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-between;padding:12px 20px;z-index:50;pointer-events:none}
+  .brand{font-weight:700;letter-spacing:.2em;color:var(--sub);font-size:.7rem}
+  .dots{display:flex;gap:6px;pointer-events:auto;flex-wrap:wrap;max-width:50vw}
+  .dots i{width:8px;height:8px;border-radius:50%;background:var(--line);cursor:pointer;transition:.3s}
+  .dots i.on{background:var(--orange);width:20px;border-radius:6px}
+  .pageno{color:var(--sub);font-size:.76rem;font-variant-numeric:tabular-nums}
+  .hint{position:fixed;right:20px;top:16px;color:#cabfae;font-size:.7rem;z-index:50}
+
+  @media print{
+    @page{size:1280px 720px;margin:0}
+    html,body{height:auto;overflow:visible;background:#fff}
+    .deck{position:static}
+    .slide{position:relative;inset:auto;opacity:1!important;visibility:visible!important;width:1280px;height:720px;page-break-after:always;break-after:page}
+    .slide *{animation:none!important;opacity:1!important;transform:none!important;filter:none!important}
+    .hud,.hint{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- 1 タイトル -->
+  <section class="slide active">
+    <div class="kicker" data-in>福岡よかとこビジネスプランコンテスト2026 ／ 一般部門</div>
+    <h1 class="title display" data-in="2">うちのわんこ、<br><span class="accent">企業秘密です。</span></h1>
+    <p class="subtitle" data-in="3">AIに悩む時間を、AIで成長する時間に変える。</p>
+    <div class="meta" data-in="4">
+      <span>株式会社<b>BLAN</b>（2026年6月設立予定）</span><span class="dot"></span>
+      <span>代表 <b>馬場 理菜子</b></span><span class="dot"></span><span>福岡県久留米市</span>
+    </div>
+  </section>
+
+  <!-- 2 掴み -->
+  <section class="slide">
+    <div class="eyebrow" data-in>いま、起きていること</div>
+    <p class="lead display" data-in="2" style="margin-top:1.1rem">ChatGPTに「<span class="u">営業メール書いて</span>」と頼むと——</p>
+    <div class="mails" aria-hidden="true">
+      <div class="mail"><span></span><span></span></div><div class="mail"><span></span><span></span></div>
+      <div class="mail"><span></span><span></span></div><div class="mail"><span></span><span></span></div>
+      <div class="mail"><span></span><span></span></div>
+    </div>
+    <p class="punch display" data-in="5">全国の会社に、<span class="accent">同じメール</span>が届く時代。<br>AIが普及するほど、会社は“同じ顔”になる。</p>
+  </section>
+
+  <!-- 3 インサイト -->
+  <section class="slide">
+    <div class="insight-wrap">
+      <div class="eyebrow" data-in>だから、BLANは逆を行く</div>
+      <h2 class="slogan display" style="margin-top:1.2rem">
+        <span class="reveal">AIを<span class="accent">育てる</span>会社が、</span><br>
+        <span class="reveal b">AIに<span class="accent">勝てる</span>。</span>
+      </h2>
+      <p class="insight-sub" data-in="5">自社の<span class="hl">言葉・判断・文化</span>で育てたAIだけが、<br>均質化の時代に“<span class="hl">自社らしさ</span>”で勝つ。</p>
+    </div>
+  </section>
+
+  <!-- 4 課題（三重苦） -->
+  <section class="slide">
+    <div class="eyebrow" data-in>中小企業が直面する、3つの壁</div>
+    <div class="cards">
+      <div class="card" data-in="2"><div class="no">1</div><div class="cardfig"><svg viewBox="0 0 24 24" fill="none" stroke="#fb6103" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></div>
+        <h3>「入れただけ」で終わる</h3>
+        <p>生成AI導入は<span class="stat">57.7%</span>。なのに<span class="stat">70%</span>が「使いこなせない」（NRI 2025）。10〜50名規模は推進役も定着もいない。</p></div>
+      <div class="card" data-in="3"><div class="no">2</div><div class="cardfig"><svg viewBox="0 0 24 24" fill="none" stroke="#fb6103" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="16" rx="1.5"/><rect x="14" y="4" width="7" height="16" rx="1.5"/></svg></div>
+        <h3>均質化が独自性を奪う</h3>
+        <p>汎用AIは“世の中の標準の鏡”。自社を学ばせなければ、AIは<span class="stat">強みを消す道具</span>になる。</p></div>
+      <div class="card" data-in="4"><div class="no">3</div><div class="cardfig"><svg viewBox="0 0 24 24" fill="none" stroke="#fb6103" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+        <h3>新人離職 × 属人化</h3>
+        <p>地方中小は入社3年内離職が高い。育成コスト回収前に人が抜け、ベテランに<span class="stat">属人化</span>。</p></div>
+    </div>
+    <p class="lead2" data-in="5">ターゲットは<span class="hl">従業員10〜50名</span>の中小企業。久留米・筑後から福岡全域へ。</p>
+  </section>
+
+  <!-- 5 解決＝わんこAI -->
+  <section class="slide">
+    <div class="eyebrow" data-in>BLANの答え</div>
+    <h2 class="h2 display" data-in="2">新人が“<span class="accent">育てる</span>”という、逆転の発想。</h2>
+    <p class="lead2" data-in="3">新人社員が、自分で名付けた犬キャラAI「わんこ」と<span class="hl">毎日対話</span>。<br>日報・マニュアル・ベテランの暗黙知が、話すだけで貯まっていく。</p>
+    <div class="triple">
+      <span class="chip" data-in="4">離職を防ぐ</span>
+      <span class="chip" data-in="5">AIが定着する</span>
+      <span class="chip" data-in="6">ナレッジが自動で貯まる</span>
+    </div>
+    <p class="lead2" data-in="6">成長が見える（犬が育つ・着せ替え）から続く。次の新人へ「<span class="hl">先輩わんこ</span>」として引き継がれる。</p>
+  </section>
+
+  <!-- 6 もう動く（実機）（塊をページ中央に） -->
+  <section class="slide" style="align-items:center">
+    <div class="device-wrap" style="justify-content:center;max-width:1140px">
+      <div class="device" data-in="2">
+        <div class="screen">
+          <div class="scr-dog">
+            <div class="bubble">今日はまず仕込みからやろか。<br>焦らんでええ、<b>一個ずつ</b>な。</div>
+            <iframe src="/dog-mockup/index.html" title="わんこAI（実機3D）" style="position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent" scrolling="no"></iframe>
+          </div>
+          <div class="scr-bar">▶ わんこと対話中 ・ 関西弁の音声＋口パク</div>
+        </div>
+      </div>
+      <div class="device-copy" style="text-align:center">
+        <div class="eyebrow" data-in="3">しかも、絵じゃない</div>
+        <h2 class="h2 display" data-in="4" style="margin-top:.4rem">もう、<span class="accent">動いています。</span></h2>
+        <div class="flow" data-in="5">
+          <span class="step">話しかける</span><span class="arrow">→</span>
+          <span class="step">日報が生成</span><span class="arrow">→</span>
+          <span class="step">育つと進化</span>
+        </div>
+        <p class="lead2" data-in="5">構想じゃない。<span class="hl">触れる実機</span>がすでにある。</p>
+        <p class="note" data-in="6" style="text-align:left">※ 最終審査では実機ライブデモを実演します。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 3層モデル（フラット3カード） -->
+  <section class="slide">
+    <div class="eyebrow" data-in>稼ぎ方 ＝ 3層の収益モデル</div>
+    <div class="tier3">
+      <div class="tcard" data-in="2"><div class="tlv">① 入口</div><div class="tnm">スクール</div><div class="tpr">初期20万＋月5万</div><div class="tds">AI研修 全12回＋わんこ導入セット</div></div>
+      <div class="tarrow" data-in="3">→</div>
+      <div class="tcard" data-in="3"><div class="tlv">② 継続</div><div class="tnm">SaaS</div><div class="tpr">月3〜8万 / 社</div><div class="tds">マニュアル蓄積・日報分析つき</div></div>
+      <div class="tarrow" data-in="4">→</div>
+      <div class="tcard lead" data-in="4"><div class="tlv">③ 深耕</div><div class="tnm">伴走コンサル</div><div class="tpr">月10〜20万</div><div class="tds">AI交通ルール設計・差別化・SNS発信支援</div></div>
+    </div>
+    <p class="lead2" data-in="5">入口 → 継続 → 深耕で<span class="hl">LTVを積み上げる</span>直接課金モデル。将来はベンダー認定でリセラー収益も。</p>
+  </section>
+
+  <!-- 8 なぜ私か（付箋8: 引用を見出し直下へ・全体中央） -->
+  <section class="slide" style="align-items:center;text-align:center">
+    <div class="eyebrow" data-in>なぜ、馬場理菜子なのか</div>
+    <div class="quote display" data-in="2" style="border-left:none;border-radius:18px;max-width:880px;margin-top:1.2rem">「私はエンジニアじゃない。<br>現場で働いてきたから、<br><span style="color:var(--orange)">現場で使われるAI</span>が作れる。」</div>
+    <ul class="points" data-in="4" style="margin-top:1.8rem;max-width:760px;align-items:flex-start;text-align:left">
+      <li style="justify-content:flex-start"><b>◯</b><span>農業法人マネージャーとして、人事・補助金・新規事業・EC・SNSを一手に</span></li>
+      <li style="justify-content:flex-start"><b>◯</b><span>補助金採択 累計<strong>1億円超</strong> ／ AI研修 完走率<strong>100%</strong> ／ PM実績20件超</span></li>
+      <li style="justify-content:flex-start"><b>◯</b><span>製菓・クリニック・農業・建築…業種を問わず“現場に入る”支援</span></li>
+    </ul>
+    <p class="proof" data-in="5" style="max-width:860px">実証フィールド確保済み：<b>クロボー製菓・ばばトータルケアクリニック・糸島自然農学校・F・Iテックス</b> 等がβ導入先。</p>
+  </section>
+
+  <!-- 9 市場と3年目標（2x2グリッド） -->
+  <section class="slide">
+    <h2 class="mtop-h display" data-in>市場規模と、3年の射程</h2>
+    <p class="mtop-sub" data-in="2">「教える人がいない・続かない」という二大課題を<br>1つの仕組みで解くから、ニーズに直結する。</p>
+    <div class="mgrid">
+      <div class="mcard" data-in="3"><div class="cap">国内HR Tech市場（矢野経済 2025）</div><div class="num">約<b>3,500</b>億円</div></div>
+      <div class="mcard" data-in="4"><div class="cap">企業向けAI研修市場・急拡大中</div><div class="num">約<b>800</b>億円</div></div>
+      <div class="mcard" data-in="5"><div class="cap">福岡県の中小 約10万社 × 10%</div><div class="num"><b>10,000</b>社</div></div>
+      <div class="mcard som" data-in="6"><div class="cap">対象1万社の0.5% ・ ロードマップと整合</div><div class="num">累計<b>50</b>社</div></div>
+    </div>
+  </section>
+
+  <!-- 10 ロードマップ -->
+  <section class="slide" style="align-items:center">
+    <div class="eyebrow" data-in>今後のロードマップ</div>
+    <div class="timeline">
+      <div class="tl" data-in="2"><div class="when">2026年 6月</div><div class="what">既存クライアント（製菓・クリニック・農業法人）で<b>β導入</b>開始</div></div>
+      <div class="tl" data-in="3"><div class="when">2026年 8月</div><div class="what">経営者100名を募集し「AI概論」開催 → 関係構築 → <b>新規3社</b>獲得</div></div>
+      <div class="tl" data-in="4"><div class="when">2027年 1月</div><div class="what"><b>SaaS単体販売</b>開始。契約10社を目標</div></div>
+      <div class="tl" data-in="5"><div class="when">2027年 3月</div><div class="what"><b>ベンダー認定制度</b>を設置し、口コミで拡大</div></div>
+    </div>
+  </section>
+
+  <!-- 11 締め -->
+  <section class="slide">
+    <div class="closing">
+      <div class="eyebrow" data-in>久留米から</div>
+      <div class="big display" data-in="2" style="margin-top:1rem">久留米を、<br>「<span class="accent">育てるAI</span>の発祥地」に。</div>
+      <p class="sub" data-in="4">AIで“便利になる”んじゃない。<br>AIで<span style="color:var(--ink)">人が育ち、会社が自分たちらしくなる</span>。<br>その体験を、久留米の中小企業に届けたい。</p>
+      <div class="contact" data-in="5"><b>株式会社BLAN</b>（2026年6月設立予定）／ 代表 馬場 理菜子 ／ rinako@blan-ai.jp</div>
+    </div>
+  </section>
+
+</div>
+
+<div class="hint">← → / Space で移動 ・ Pで印刷(PDF)</div>
+<div class="hud">
+  <div class="brand">BLAN ／ うちのわんこ、企業秘密です</div>
+  <div class="dots" id="dots"></div>
+  <div class="pageno"><span id="cur">1</span> / <span id="tot">11</span></div>
+</div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  const dotsEl=document.getElementById('dots');
+  const curEl=document.getElementById('cur');
+  let i=0;
+  slides.forEach((_,n)=>{const d=document.createElement('i');d.onclick=(e)=>{e.stopPropagation();go(n)};dotsEl.appendChild(d)});
+  const dots=[...dotsEl.children];
+  document.getElementById('tot').textContent=slides.length;
+  function go(n){i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+    dots.forEach((d,k)=>d.classList.toggle('on',k===i));curEl.textContent=i+1;}
+  function next(){go(i+1)} function prev(){go(i-1)}
+  go(0);
+  // ナビは「フォーカスがデッキ内 or どこにも無い」時だけ許可。
+  // Sasshi等の外部ウィジェット(input/shadow DOM/iframe)にフォーカスがあれば、デッキはキーを一切拾わない。
+  const deckEl=document.getElementById('deck');
+  function navOK(){
+    const a=document.activeElement;
+    return !a || a===document.body || a===document.documentElement || deckEl.contains(a);
+  }
+  window.addEventListener('keydown',e=>{
+    if(!navOK()) return;                         // ← Sasshi入力中は何もしない
+    if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();next()}
+    else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();prev()}
+    else if(e.key==='p'||e.key==='P'){window.print()}
+  });
+  deckEl.addEventListener('click',e=>{
+    if(e.target.closest('.dots')||!deckEl.contains(e.target)) return;
+    next();
+  });
+</script>
+<!-- Sasshi QA Widget (本番は ?sasshi=on で起動、QA限定) -->
+<script async src="https://sasshi-cdn.pages.dev/bootstrap.js" data-pid="blan-bpc2026"></script>
+</body>
+</html>
