@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { DemoHeader } from "@/components/DemoLayout";
+import { MicButton } from "@/components/MicButton";
 import { cn } from "@/lib/utils";
 import { getCachedTts, setCachedTts } from "@/lib/tts-cache";
 import { logAnalytics } from "@/lib/analytics";
@@ -525,11 +526,15 @@ export default function SenpaiWankoPage() {
                 onSubmit={(e) => { e.preventDefault(); send(input); }}
                 className="flex-shrink-0 flex gap-2 px-5 pb-4 pt-3"
               >
+                <MicButton
+                  onTranscribed={(text) => setInput(text)}
+                  disabled={isStreaming}
+                />
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="先輩犬に話しかけてみよう"
+                  placeholder="先輩犬に話しかけてみよう（マイクでも可）"
                   disabled={isStreaming}
                   className="flex-1 h-11 rounded-xl bg-[#faf9f6] neu-inset-sm px-4 text-sm font-medium text-stone-800 placeholder:text-stone-400 outline-none focus:ring-2 focus:ring-[#fb6103] focus:ring-offset-2 focus:ring-offset-[#faf9f6] disabled:opacity-50"
                 />
